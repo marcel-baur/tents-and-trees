@@ -20,23 +20,22 @@ void Field::generateFromFile(const string& path) {
         string line;
         getline(file, line);
         int fieldSize = getSize(line);
-        vector<vector<CellContent>> m (fieldSize, vector<CellContent > (fieldSize, Empty));
-        map = m;
-
-//        for (int i = 0; i < fieldSize; i++) {
-//            for (int j = 0; j < fieldSize; j++) {
-//                cout << j << '\n';
-//                map[i][j] = Empty;
-//                cout << "done" << '\n';
-//            }
-//        }
+        for (int i = 0; i < fieldSize; i++) {
+            vector<CellContent> row (fieldSize, Empty);
+            map.push_back(row);
+        }
         int currLine = 0;
-        string delim = " ";
+        char delim = ' ';
         while (getline(file, line)) {
             cout << currLine << '\n';
             if (currLine < fieldSize) {
+                // GameField representation
                 cout << line << '\n';
                 string rowConfig = line.substr(0, line.find(delim));
+                cout << rowConfig << '\n';
+                cout << line.substr(line.find(delim)) << '\n';
+                int rowNumber = stoi(line.substr(line.find(delim)));
+                rowNumbers.push_back(rowNumber);
                 cout << rowConfig << '\n';
                 for (int i = 0; i < fieldSize; i++) {
                     if (rowConfig[i] == '.') {
@@ -46,6 +45,13 @@ void Field::generateFromFile(const string& path) {
                     } else {
                         throw "Bad File Format (Cell is neither Tree nor Empty)";
                     }
+                }
+            } else if (currLine == fieldSize) {
+                // Column Number definitions
+                for (int i = 0; i < fieldSize * 2; i+=2) {
+                    int colNumber = stoi(line.substr(i, line.find(' ')));
+                    colNumbers.push_back(colNumber);
+                    cout << "Col Number: " << colNumber << '\n';
                 }
             }
             cout << line << "\n";

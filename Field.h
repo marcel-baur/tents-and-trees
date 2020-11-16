@@ -22,6 +22,8 @@ public:
 private:
     static int getSize(const string& firstLine);
     vector<vector<CellContent>> map;
+    vector<int> rowNumbers;
+    vector<int> colNumbers;
 };
 
 #endif //SAT_FIELD_H
