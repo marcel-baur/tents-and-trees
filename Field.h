@@ -20,10 +20,13 @@ public:
     void printField();
 
 private:
-    static int getSize(const string& firstLine);
+    static vector<int> getSize(const string& firstLine);
     vector<vector<CellContent>> map;
     vector<int> rowNumbers;
     vector<int> colNumbers;
+    void setClearRows();
+    void setClearCols();
+    void blockFieldsWithoutTree();
 };
 
 #endif //SAT_FIELD_H
