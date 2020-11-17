@@ -27,6 +27,10 @@ private:
     void setClearRows();
     void setClearCols();
     void blockFieldsWithoutTree();
+    int emptyFieldsInRow(int row);
+    int emptyFieldsInCol(int col);
+    void solveRows();
+    void solveCols();
 };
 
 #endif //SAT_FIELD_H

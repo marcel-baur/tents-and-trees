@@ -120,6 +120,8 @@ void Field::solve() {
     setClearRows();
     setClearCols();
     blockFieldsWithoutTree();
+    solveRows();
+    solveCols();
 }
 
 void Field::setClearRows() {
@@ -183,6 +185,53 @@ void Field::blockFieldsWithoutTree() {
                            map[r][c + 1] != Tree) {
                     map[r][c] = Blocked;
                 }
+            }
+        }
+    }
+}
+
+int Field::emptyFieldsInRow(int row) {
+    int result = 0;
+    for (int i = 0; i < map[row].size(); i++) {
+        if (map[row][i] == Empty) {
+            result++;
+        }
+    }
+    return result;
+}
+
+int Field::emptyFieldsInCol(int col) {
+    int result = 0;
+    for (int i = 0; i < map.size(); i++) {
+        if (map[i][col] == Empty) {
+            result++;
+        }
+    }
+    return result;
+}
+
+void Field::solveRows() {
+    for (int i = 0; i < map.size(); i++) {
+        int rowNumber = rowNumbers[i];
+        int emptyFields = emptyFieldsInRow(i);
+        if (rowNumber == emptyFields && rowNumber != 0) {
+            cout << "Solved Row!" << '\n';
+            for (int j = 0; j < map[i].size(); j++) {
+                if (map[i][j] == Empty) map[i][j] = Tent;
+            }
+        }
+    }
+}
+
+void Field::solveCols() {
+    for (int col = 0; col < map[0].size(); col++) {
+        int colNumber = colNumbers[col];
+        int emptyFields = emptyFieldsInCol(col);
+        cout << colNumber << ' ' << emptyFields << '\n';
+        if (colNumber == emptyFields && colNumber != 0) {
+            cout << "Solved Col!" << '\n';
+            for (int j = 0; j < map.size(); j++) {
+                if (map[j][col] == Empty) map[j][col] = Tent;
             }
         }
     }
