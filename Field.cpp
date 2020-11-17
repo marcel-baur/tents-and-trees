@@ -12,7 +12,7 @@
 
 using namespace std;
 
-void Field::generateFromFile(const string& path) {
+void Field::generateFromFile(const string &path) {
     ifstream file;
     file.open(path, ios::in);
     cout << "Reading file " << path << "\n";
@@ -22,7 +22,7 @@ void Field::generateFromFile(const string& path) {
         vector<int> fieldSize = getSize(line);
         cout << fieldSize[0] << " " << fieldSize[1] << '\n';
         for (int i = 0; i < fieldSize[0]; i++) {
-            vector<CellContent> row (fieldSize[1], Empty);
+            vector<CellContent> row(fieldSize[1], Empty);
             map.push_back(row);
         }
         int currLine = 0;
@@ -50,18 +50,18 @@ void Field::generateFromFile(const string& path) {
                 try {
 
 
-                cout << "Col No def " << fieldSize[0] << "\n";
-                cout << currLine << '\n';
-                for (int i = 0; i < line.size(); i+=2) {
-                    cout << line.substr(i, line.find(' ')) << '\n';
-                    string extraction = line.substr(i, line.find(' '));
-                    if (extraction.size() > 1) {
-                        i = i + (extraction.size() - 1);
+                    cout << "Col No def " << fieldSize[0] << "\n";
+                    cout << currLine << '\n';
+                    for (int i = 0; i < line.size(); i += 2) {
+                        cout << line.substr(i, line.find(' ')) << '\n';
+                        string extraction = line.substr(i, line.find(' '));
+                        if (extraction.size() > 1) {
+                            i = i + (extraction.size() - 1);
+                        }
+                        int colNumber = stoi(extraction); // FIXME: Error when number has 2 digits
+                        colNumbers.push_back(colNumber);
                     }
-                    int colNumber = stoi(extraction); // FIXME: Error when number has 2 digits
-                    colNumbers.push_back(colNumber);
-                }
-                } catch (const exception& e) {
+                } catch (const exception &e) {
                     cout << "ERROR in colNumbers";
                 }
             }
@@ -73,38 +73,43 @@ void Field::generateFromFile(const string& path) {
     }
 }
 
-vector<int> Field::getSize(const string& firstLine)  {
+vector<int> Field::getSize(const string &firstLine) {
     try {
         vector<string> info;
         istringstream iss(firstLine);
-        for (string l; iss >> l; )
+        for (string l; iss >> l;)
             info.push_back(l);
         cout << "aaaa \n";
         int rows = stoi(info[0]);
         int cols = stoi(info[1]);
         cout << "bbbb \n";
-        vector<int> result= {rows, cols};
+        vector<int> result = {rows, cols};
         return result;
-    } catch (const exception& e) {
+    } catch (const exception &e) {
         cout << "ERROR in getSize";
     }
 
 }
 
 void Field::printField() {
-    for (auto & i : map) {
-        for (auto & j : i) {
+    for (auto &i : map) {
+        for (auto &j : i) {
 //            cout << "\nValue:" << j << '\n';
             switch (j) {
-                case Tent: cout<<"^";
+                case Tent:
+                    cout << "^";
                     break;
-                case Tree: cout << "T";
-                break;
-                case Empty: cout << ".";
-                break;
-                case Blocked: cout << "x";
+                case Tree:
+                    cout << "T";
                     break;
-                default: cout << "?";
+                case Empty:
+                    cout << ".";
+                    break;
+                case Blocked:
+                    cout << "x";
+                    break;
+                default:
+                    cout << "?";
             }
         }
         cout << '\n';
@@ -141,27 +146,42 @@ void Field::blockFieldsWithoutTree() {
     cout << "Blocking open fields\n";
     for (int r = 0; r < rowNumbers.size(); r++) {
         for (int c = 0; c < colNumbers.size(); c++) {
-            if (map[c][r] == Empty){
-                if (c == 0 && r == 0 && map[r][c + 1] != Tree && map[r + 1][c] != Tree) {
-                    map[c][r] = Blocked;
-                }
-                else if (c == 0 && r > 0 && map[r - 1][c] != Tree && map[r][c + 1] != Tree && map[r + 1][c] != Tree) {
-                    map[c][r] = Blocked;
-                }
-                else if (r == 0 && c > 0 && map[r][c - 1] != Tree && map[r][c + 1] != Tree && map[r + 1][c] != Tree) {
-                    map[c][r] = Blocked;
-                } else if (c == colNumbers.size() - 1 && r == rowNumbers.size() - 1 && map[r][c - 1] != Tree &&
-                           map[r - 1][c] != Tree) {
-                    map[c][r] = Blocked;
-                } else if (c == colNumbers.size() - 1 && r < rowNumbers.size() - 1 && r > 0 && map[r - 1][c] != Tree && map[r][c - 1] != Tree &&
+            if (map[r][c] == Empty) {
+                cout << r << ' ' << c << ' ' << map[r][c] << '\n';
+                if (c == 0 && r == 0 &&
+                    map[r][c + 1] != Tree &&
+                    map[r + 1][c] != Tree) {
+                    map[r][c] = Blocked;
+                } else if (c == 0 && r > 0 &&
+                           map[r - 1][c] != Tree &&
+                           map[r][c + 1] != Tree &&
                            map[r + 1][c] != Tree) {
-                    map[c][r] = Blocked;
-                } else if (r == rowNumbers.size() - 1 && c < colNumbers.size() - 1 && c > 0 && map[r][c - 1] != Tree && map[r][c + 1] != Tree &&
+                    map[r][c] = Blocked;
+                } else if (r == 0 && c > 0 &&
+                           map[r][c - 1] != Tree &&
+                           map[r][c + 1] != Tree &&
+                           map[r + 1][c] != Tree) {
+                    map[r][c] = Blocked;
+                } else if (c == colNumbers.size() - 1 && r == rowNumbers.size() - 1 &&
+                           map[r][c - 1] != Tree &&
                            map[r - 1][c] != Tree) {
-                    map[c][r] = Blocked;
-                }
-                else if (r < rowNumbers.size() - 1 && r > 0 && c < colNumbers.size() - 1 && c > 0 && map[r - 1][c] != Tree && map[r][c - 1] != Tree && map[r + 1][c] != Tree && map[r][c+1] != Tree) {
-                    map[c][r] = Blocked;
+                    map[r][c] = Blocked;
+                } else if (c == colNumbers.size() - 1 && r < rowNumbers.size() - 1 && r > 0 &&
+                           map[r - 1][c] != Tree &&
+                           map[r][c - 1] != Tree &&
+                           map[r + 1][c] != Tree) {
+                    map[r][c] = Blocked;
+                } else if (r == rowNumbers.size() - 1 && c < colNumbers.size() - 1 && c > 0 &&
+                           map[r][c - 1] != Tree &&
+                           map[r][c + 1] != Tree &&
+                           map[r - 1][c] != Tree) {
+                    map[r][c] = Blocked;
+                } else if (r < rowNumbers.size() - 1 && r > 0 && c < colNumbers.size() - 1 && c > 0 &&
+                           map[r - 1][c] != Tree &&
+                           map[r][c - 1] != Tree &&
+                           map[r + 1][c] != Tree &&
+                           map[r][c + 1] != Tree) {
+                    map[r][c] = Blocked;
                 }
             }
         }
