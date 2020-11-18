@@ -58,7 +58,7 @@ void Field::generateFromFile(const string &path) {
                         if (extraction.size() > 1) {
                             i = i + (extraction.size() - 1);
                         }
-                        int colNumber = stoi(extraction); // FIXME: Error when number has 2 digits
+                        int colNumber = stoi(extraction);
                         colNumbers.push_back(colNumber);
                     }
                 } catch (const exception &e) {
