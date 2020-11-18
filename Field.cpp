@@ -15,12 +15,10 @@ using namespace std;
 void Field::generateFromFile(const string &path) {
     ifstream file;
     file.open(path, ios::in);
-    cout << "Reading file " << path << "\n";
     if (file.is_open()) {
         string line;
         getline(file, line);
         vector<int> fieldSize = getSize(line);
-        cout << fieldSize[0] << " " << fieldSize[1] << '\n';
         for (int i = 0; i < fieldSize[0]; i++) {
             vector<CellContent> row(fieldSize[1], Empty);
             map.push_back(row);
@@ -31,11 +29,8 @@ void Field::generateFromFile(const string &path) {
             if (currLine < fieldSize[0]) {
                 // GameField representation
                 string rowConfig = line.substr(0, line.find(delim));
-//                cout << rowConfig << '\n';
-//                cout << line.substr(line.find(delim)) << '\n';
                 int rowNumber = stoi(line.substr(line.find(delim)));
                 rowNumbers.push_back(rowNumber);
-//                cout << rowConfig << '\n';
                 for (int i = 0; i < fieldSize[1]; i++) {
                     if (rowConfig[i] == '.') {
                         map[currLine][i] = Empty;
@@ -48,12 +43,7 @@ void Field::generateFromFile(const string &path) {
             } else if (currLine == fieldSize[0]) {
                 // Column Number definitions
                 try {
-
-
-                    cout << "Col No def " << fieldSize[0] << "\n";
-                    cout << currLine << '\n';
                     for (int i = 0; i < line.size(); i += 2) {
-                        cout << line.substr(i, line.find(' ')) << '\n';
                         string extraction = line.substr(i, line.find(' '));
                         if (extraction.size() > 1) {
                             i = i + (extraction.size() - 1);
@@ -79,10 +69,8 @@ vector<int> Field::getSize(const string &firstLine) {
         istringstream iss(firstLine);
         for (string l; iss >> l;)
             info.push_back(l);
-        cout << "aaaa \n";
         int rows = stoi(info[0]);
         int cols = stoi(info[1]);
-        cout << "bbbb \n";
         vector<int> result = {rows, cols};
         return result;
     } catch (const exception &e) {
@@ -94,7 +82,6 @@ vector<int> Field::getSize(const string &firstLine) {
 void Field::printField() {
     for (auto &i : map) {
         for (auto &j : i) {
-//            cout << "\nValue:" << j << '\n';
             switch (j) {
                 case Tent:
                     cout << "^";
@@ -145,11 +132,9 @@ void Field::setClearCols() {
 }
 
 void Field::blockFieldsWithoutTree() {
-    cout << "Blocking open fields\n";
     for (int r = 0; r < rowNumbers.size(); r++) {
         for (int c = 0; c < colNumbers.size(); c++) {
             if (map[r][c] == Empty) {
-                cout << r << ' ' << c << ' ' << map[r][c] << '\n';
                 if (c == 0 && r == 0 &&
                     map[r][c + 1] != Tree &&
                     map[r + 1][c] != Tree) {
@@ -215,7 +200,6 @@ void Field::solveRows() {
         int rowNumber = rowNumbers[i];
         int emptyFields = emptyFieldsInRow(i);
         if (rowNumber == emptyFields && rowNumber != 0) {
-            cout << "Solved Row!" << '\n';
             for (int j = 0; j < map[i].size(); j++) {
                 if (map[i][j] == Empty) map[i][j] = Tent;
             }
@@ -227,9 +211,7 @@ void Field::solveCols() {
     for (int col = 0; col < map[0].size(); col++) {
         int colNumber = colNumbers[col];
         int emptyFields = emptyFieldsInCol(col);
-        cout << colNumber << ' ' << emptyFields << '\n';
         if (colNumber == emptyFields && colNumber != 0) {
-            cout << "Solved Col!" << '\n';
             for (int j = 0; j < map.size(); j++) {
                 if (map[j][col] == Empty) map[j][col] = Tent;
             }
