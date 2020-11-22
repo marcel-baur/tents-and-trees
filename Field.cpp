@@ -110,7 +110,7 @@ void Field::solve() {
     solveRows();
     solveCols();
     blockTentRadius();
-    // blockTreeWithTentRadius();
+    blockTreeWithTentRadius();
 }
 
 void Field::solveRowsAndCols() {
@@ -228,7 +228,24 @@ void Field::blockTentRadius() {
     }
 }
 
-
+void Field::blockTreeWithTentRadius() {
+    for (int r = 0; r < rowNumbers.size(); r++) {
+        for (int c = 0; c < colNumbers.size(); c++) {
+            if (map[r][c] == Tree) {
+                if ((r + 1 < rowNumbers.size() - 1 && map[r+1][c] == Tent)
+                    || (r - 1 > 0 && map[r-1][c] == Tent)
+                    || (c + 1 < colNumbers.size() - 1 && map[r][c + 1] == Tent)
+                    || (c - 1 > 0 && map[r][c - 1] == Tent)
+                    || (r + 1 < rowNumbers.size() - 1 && c + 1 < colNumbers.size() - 1 && map[r + 1][c + 1] == Tent)
+                    || (r + 1 < rowNumbers.size() - 1 && c - 1 > 0 && map[r + 1][c - 1] == Tent)
+                    || (r - 1 > 0 && c + 1 < colNumbers.size() - 1 && map[r - 1][c + 1] == Tent)
+                    || (r - 1 > 0 && c - 1 > 0 && map[r - 1][c - 1] == Tent)){
+                    blockRadius(r, c);
+                }
+            }
+        }
+    }
+}
 
 void Field::blockRadius(const int r, const int c) {
     if (r + 1 < rowNumbers.size() - 1 && map[r+1][c] == Empty) {
