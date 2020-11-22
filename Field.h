@@ -32,6 +32,9 @@ private:
     void solveRows();
     void solveCols();
     void blockTentRadius();
+    void solveRowsAndCols();
+    void blockTreeWithTentRadius();
+    void blockRadius(int r, int c);
 };
 
 #endif //SAT_FIELD_H
