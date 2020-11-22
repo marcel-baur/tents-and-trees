@@ -222,7 +222,7 @@ void Field::blockTentRadius() {
     for (int r = 0; r < rowNumbers.size(); r++) {
         for (int c = 0; c < colNumbers.size(); c++) {
             if (map[r][c] == Tent) {
-                blockRadius(r, c);
+                blockRadiusTent(r, c);
             }
         }
     }
@@ -232,59 +232,70 @@ void Field::blockTreeWithTentRadius() {
     for (int r = 0; r < rowNumbers.size(); r++) {
         for (int c = 0; c < colNumbers.size(); c++) {
             if (map[r][c] == Tree) {
-                if (checkRadiusFor(Tent, r, c) == true){
-                    blockRadius(r, c);
+                if (checkRadiusFor(Tent, r, c)){
+                    blockRadiusTree(r, c);
                 }
             }
         }
     }
 }
 
-void Field::blockRadius(const int r, const int c) {
-    if (r + 1 < rowNumbers.size() - 1 && map[r+1][c] == Empty) {
+void Field::blockRadiusTent(const int r, const int c) {
+    if (r + 1 < rowNumbers.size() && map[r+1][c] == Empty) {
         map[r+1][c] = Blocked;
     }
-    if (r - 1 > 0 && map[r-1][c] == Empty) {
+    if (r - 1 >= 0 && map[r-1][c] == Empty) {
         map[r-1][c] = Blocked;
     }
-    if (c + 1 < colNumbers.size() - 1 && map[r][c + 1] == Empty) {
+    if (c + 1 < colNumbers.size() && map[r][c + 1] == Empty) {
         map[r][c + 1] = Blocked;
     }
-    if (c - 1 > 0 && map[r][c - 1] == Empty) {
+    if (c - 1 >= 0 && map[r][c - 1] == Empty) {
         map[r][c - 1] = Blocked;
     }
-    if (r + 1 < rowNumbers.size() - 1 && c + 1 < colNumbers.size() - 1
-        && map[r + 1][c + 1] == Empty) {
+    if (r + 1 < rowNumbers.size() && c + 1 < colNumbers.size() && map[r + 1][c + 1] == Empty) {
         map[r + 1][c + 1] = Blocked;
     }
-    if (r + 1 < rowNumbers.size() - 1 && c - 1 > 0
+    if (r + 1 < rowNumbers.size() && c - 1 >= 0
         && map[r + 1][c - 1] == Empty) {
         map[r + 1][c - 1] = Blocked;
     }
-    if (r - 1 > 0 && c + 1 < colNumbers.size() - 1
-        && map[r - 1][c + 1] == Empty) {
+    if (r - 1 >= 0 && c + 1 < colNumbers.size() && map[r - 1][c + 1] == Empty) {
         map[r - 1][c + 1] = Blocked;
     }
-    if (r - 1 > 0 && c - 1 > 0 && map[r - 1][c - 1] == Empty) {
+    if (r - 1 >= 0 && c - 1 >= 0 && map[r - 1][c - 1] == Empty) {
         map[r - 1][c - 1] = Blocked;
     }
 }
 
-bool Field::checkRadiusFor(CellContent cellContent, int r, int c) {
-    if ((r + 1 < rowNumbers.size() - 1 && map[r+1][c] == cellContent)
-        || (r - 1 > 0 && map[r-1][c] == cellContent)
-        || (c + 1 < colNumbers.size() - 1 && map[r][c + 1] == cellContent)
-        || (c - 1 > 0 && map[r][c - 1] == cellContent)
-        || (r + 1 < rowNumbers.size() - 1 && c + 1 < colNumbers.size() - 1 && map[r + 1][c + 1] == cellContent)
-        || (r + 1 < rowNumbers.size() - 1 && c - 1 > 0 && map[r + 1][c - 1] == cellContent)
-        || (r - 1 > 0 && c + 1 < colNumbers.size() - 1 && map[r - 1][c + 1] == cellContent)
-        || (r - 1 > 0 && c - 1 > 0 && map[r - 1][c - 1] == cellContent)) {
+void Field::blockRadiusTree(int r, int c) {
+    if (r + 1 < rowNumbers.size() && map[r+1][c] == Empty) {
+        map[r+1][c] = Blocked;
+    }
+    if (r - 1 >= 0 && map[r-1][c] == Empty) {
+        map[r-1][c] = Blocked;
+    }
+    if (c + 1 < colNumbers.size() && map[r][c + 1] == Empty) {
+        map[r][c + 1] = Blocked;
+    }
+    if (c - 1 >= 0 && map[r][c - 1] == Empty) {
+        map[r][c - 1] = Blocked;
+    }
+}
 
+bool Field::checkRadiusFor(CellContent cellContent, int r, int c) {
+
+    if (r + 1 < rowNumbers.size() && map[r+1][c] == cellContent) {
+        return true;
+    } else if (r - 1 >= 0 && map[r-1][c] == cellContent) {
+        return true;
+    } else if (c + 1 < colNumbers.size() && map[r][c + 1] == cellContent) {
+        return true;
+    } else if (c - 1 >= 0 && map[r][c - 1] == cellContent) {
         return true;
     } else {
         return false;
-    }
-
+            }
 }
 
 void Field::solveCols() {

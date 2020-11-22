@@ -34,8 +34,10 @@ private:
     void blockTentRadius();
     void solveRowsAndCols();
     void blockTreeWithTentRadius();
-    void blockRadius(int r, int c);
+    void blockRadiusTent(int r, int c);
+    void blockRadiusTree(int r, int c);
     bool checkRadiusFor(CellContent cellContent, int r, int c);
+
 };
 
 #endif //SAT_FIELD_H
