@@ -212,36 +212,31 @@ void Field::blockTentRadius() {
     for (int r = 0; r < rowNumbers.size(); r++) {
         for (int c = 0; c < colNumbers.size(); c++) {
             if (map[r][c] == Tent) {
-                if (map[r+1][c] == Empty && r < rowNumbers.size() - 1 && r > 0
-                        && c < colNumbers.size() - 1 && c > 0) {
+                if (r + 1 < rowNumbers.size() - 1 && map[r+1][c] == Empty) {
                     map[r+1][c] = Blocked;
                 }
-                if (map[r - 1][c] == Empty && r < rowNumbers.size() - 1 && r > 0
-                    && c < colNumbers.size() - 1 && c > 0) {
-                    map[r - 1][c] = Blocked;
+                if (r - 1 > 0 && map[r-1][c] == Empty) {
+                    map[r-1][c] = Blocked;
                 }
-                if (map[r][c + 1] == Empty && r < rowNumbers.size() - 1 && r > 0
-                    && c < colNumbers.size() - 1 && c > 0) {
+                if (c + 1 < colNumbers.size() - 1 && map[r][c + 1] == Empty) {
                     map[r][c + 1] = Blocked;
                 }
-                if (map[r][c - 1] == Empty && r < rowNumbers.size() - 1 && r > 0
-                    && c < colNumbers.size() - 1 && c > 0) {
+                if (c - 1 > 0 && map[r][c - 1] == Empty) {
                     map[r][c - 1] = Blocked;
                 }
-                if (map[r + 1][c + 1] == Empty && r < rowNumbers.size() - 1 && r > 0
-                    && c < colNumbers.size() - 1 && c > 0) {
+                if (r + 1 < rowNumbers.size() - 1 && c + 1 < colNumbers.size() - 1
+                && map[r + 1][c + 1] == Empty) {
                     map[r + 1][c + 1] = Blocked;
                 }
-                if (map[r + 1][c - 1] == Empty && r < rowNumbers.size() - 1 && r > 0
-                    && c < colNumbers.size() - 1 && c > 0) {
+                if (r + 1 < rowNumbers.size() - 1 && c - 1 > 0
+                && map[r + 1][c - 1] == Empty) {
                     map[r + 1][c - 1] = Blocked;
                 }
-                if (map[r - 1][c + 1] == Empty && r < rowNumbers.size() - 1 && r > 0
-                    && c < colNumbers.size() - 1 && c > 0) {
+                if (r - 1 > 0 && c + 1 < colNumbers.size() - 1
+                && map[r - 1][c + 1] == Empty) {
                     map[r - 1][c + 1] = Blocked;
                 }
-                if (map[r - 1][c - 1] == Empty && r < rowNumbers.size() - 1 && r > 0
-                    && c < colNumbers.size() - 1 && c > 0) {
+                if (r - 1 > 0 && c - 1 > 0 && map[r - 1][c - 1] == Empty) {
                     map[r - 1][c - 1] = Blocked;
                 }
             }
