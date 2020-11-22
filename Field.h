@@ -31,6 +31,7 @@ private:
     int emptyFieldsInCol(int col);
     void solveRows();
     void solveCols();
+    void blockTentRadius();
 };
 
 #endif //SAT_FIELD_H
