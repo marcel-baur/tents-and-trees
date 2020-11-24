@@ -203,16 +203,60 @@ int Field::emptyFieldsInCol(int col) {
     return result;
 }
 
-void Field::solveRows() {
+
+int Field::tentsInRow(int row) {
+    int result = 0;
+    for (int i = 0; i < map[row].size(); i++) {
+        if (map[row][i] == Tent) {
+            result++;
+        }
+    }
+    return result;
+}
+
+int Field::tentsInCol(int col) {
+    int result = 0;
+    for (int i = 0; i < map.size(); i++) {
+        if (map[i][col] == Tent) {
+            result++;
+        }
+    }
+    return result;
+}
+
+
+bool Field::solveRows() {
+    bool changed = false;
     for (int i = 0; i < map.size(); i++) {
         int rowNumber = rowNumbers[i];
         int emptyFields = emptyFieldsInRow(i);
-        if (rowNumber == emptyFields && rowNumber != 0) {
+        int tents = tentsInRow(i);
+        if (rowNumber - tents == emptyFields && rowNumber != 0) {
             for (int j = 0; j < map[i].size(); j++) {
                 if (map[i][j] == Empty) map[i][j] = Tent;
+                changed = true;
             }
         }
     }
+    return changed;
+}
+
+
+bool Field::solveCols() {
+    bool changed = false;
+    for (int col = 0; col < map[0].size(); col++) {
+        int colNumber = colNumbers[col];
+        int emptyFields = emptyFieldsInCol(col);
+        int tents = tentsInCol(col);
+        cout << tents << '\n';
+        if (colNumber - tents == emptyFields && colNumber != 0) {
+            for (int j = 0; j < map.size(); j++) {
+                if (map[j][col] == Empty) map[j][col] = Tent;
+                changed = true;
+            }
+        }
+    }
+    return changed;
 }
 
 void Field::blockTentRadius() {
@@ -295,17 +339,6 @@ bool Field::checkRadiusFor(CellContent cellContent, int r, int c) {
             }
 }
 
-void Field::solveCols() {
-    for (int col = 0; col < map[0].size(); col++) {
-        int colNumber = colNumbers[col];
-        int emptyFields = emptyFieldsInCol(col);
-        if (colNumber == emptyFields && colNumber != 0) {
-            for (int j = 0; j < map.size(); j++) {
-                if (map[j][col] == Empty) map[j][col] = Tent;
-            }
-        }
-    }
-}
 
 size_t Field::split(const std::string &txt, std::vector<std::string> &strs, char ch)
 {

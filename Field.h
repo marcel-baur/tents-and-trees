@@ -29,8 +29,10 @@ private:
     void blockFieldsWithoutTree();
     int emptyFieldsInRow(int row);
     int emptyFieldsInCol(int col);
-    void solveRows();
-    void solveCols();
+    int tentsInRow(int row);
+    int tentsInCol(int col);
+    bool solveRows();
+    bool solveCols();
     void blockTentRadius();
     void solveRowsAndCols();
     void blockTreeWithTentRadius();
