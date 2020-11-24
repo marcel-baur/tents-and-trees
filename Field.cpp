@@ -43,16 +43,13 @@ void Field::generateFromFile(const string &path) {
             } else if (currLine == fieldSize[0]) {
                 // Column Number definitions
                 try {
-                    for (int i = 0; i < line.size(); i += 2) {
-                        string extraction = line.substr(i, line.find(' '));
-                        if (extraction.size() > 1) {
-                            i = i + (extraction.size() - 1);
-                        }
-                        int colNumber = stoi(extraction);
-                        colNumbers.push_back(colNumber);
+                    std::vector<std::string> v;
+                    split(line, v, ' ');
+                    for (auto &s : v) {
+                        colNumbers.push_back(stoi(s));
                     }
                 } catch (const exception &e) {
-                    cout << "ERROR in colNumbers";
+                    cout << "ERROR in colNumbers" << e.what();
                 }
             }
             currLine++;
@@ -308,4 +305,24 @@ void Field::solveCols() {
             }
         }
     }
+}
+
+size_t Field::split(const std::string &txt, std::vector<std::string> &strs, char ch)
+{
+    size_t pos = txt.find( ch );
+    size_t initialPos = 0;
+    strs.clear();
+
+    // Decompose statement
+    while( pos != std::string::npos ) {
+        strs.push_back( txt.substr( initialPos, pos - initialPos ) );
+        initialPos = pos + 1;
+
+        pos = txt.find( ch, initialPos );
+    }
+
+    // Add the last one
+    strs.push_back( txt.substr( initialPos, std::min( pos, txt.size() ) - initialPos + 1 ) );
+
+    return strs.size();
 }
