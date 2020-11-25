@@ -39,6 +39,9 @@ private:
     void blockRadiusTent(int r, int c);
     void blockRadiusTree(int r, int c);
     bool checkRadiusFor(CellContent cellContent, int r, int c);
+    void placeTentForSingularTree();
+    bool isFieldTreeOrBlocked(CellContent cellContent);
+    void checkTreeFieldForSingleTent(int r, int c);
     static size_t split(const std::string &txt, std::vector<std::string> &strs, char ch);
 
 };
