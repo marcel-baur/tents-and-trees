@@ -344,16 +344,16 @@ bool Field::checkRadiusFor(CellContent cellContent, int r, int c) {
 
 int Field::checkForCompletedRows() {
     int completedRows = 0;
-    for (int row = 0; row < map[0].size(); row++) {
+    for (int row = 0; row < map.size(); row++) {
         int rowNumber = rowNumbers[row];
         int tentCounter = 0;
 
-        for (int col = 0; col < colNumbers.size(); col++) {
+        for (int col = 0; col < map[row].size(); col++) {
             if(map[row][col] == Tent) tentCounter++;
 
             }
         if(tentCounter == rowNumber){
-                for (int col = 0; col < colNumbers.size(); col++) {
+                for (int col = 0; col < map[row].size(); col++) {
                     if(map[row][col] == Empty) {
                         map[row][col] = Blocked;
                     }
