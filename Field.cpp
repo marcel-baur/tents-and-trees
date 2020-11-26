@@ -104,16 +104,16 @@ void Field::solve() {
     checkForCompletedRows();
     checkForCompletedCols();
 
-    while((rowNumbers.size() != checkForCompletedRows() && colNumbers.size() != checkForCompletedCols()) ){
-            setClearRows();
-            setClearCols();
-            blockFieldsWithoutTree();
-            solveRows();
-            solveCols();
-            blockTentRadius();
-            blockTreeWithTentRadius();
-            checkForCompletedRows();
-            checkForCompletedCols();
+    while ((rowNumbers.size() != checkForCompletedRows() && colNumbers.size() != checkForCompletedCols())) {
+        setClearRows();
+        setClearCols();
+        blockFieldsWithoutTree();
+        solveRows();
+        solveCols();
+        blockTentRadius();
+        blockTreeWithTentRadius();
+        checkForCompletedRows();
+        checkForCompletedCols();
 
         // for debugging
         cout << "solved-cols: " << checkForCompletedCols() << " space " << '\n';
@@ -276,7 +276,7 @@ void Field::blockTreeWithTentRadius() {
     for (int r = 0; r < rowNumbers.size(); r++) {
         for (int c = 0; c < colNumbers.size(); c++) {
             if (map[r][c] == Tree) {
-                if (checkRadiusFor(Tent, r, c)){
+                if (checkRadiusFor(Tent, r, c)) {
                     blockRadiusTree(r, c);
                 }
             }
@@ -285,11 +285,11 @@ void Field::blockTreeWithTentRadius() {
 }
 
 void Field::blockRadiusTent(const int r, const int c) {
-    if (r + 1 < rowNumbers.size() && map[r+1][c] == Empty) {
-        map[r+1][c] = Blocked;
+    if (r + 1 < rowNumbers.size() && map[r + 1][c] == Empty) {
+        map[r + 1][c] = Blocked;
     }
-    if (r - 1 >= 0 && map[r-1][c] == Empty) {
-        map[r-1][c] = Blocked;
+    if (r - 1 >= 0 && map[r - 1][c] == Empty) {
+        map[r - 1][c] = Blocked;
     }
     if (c + 1 < colNumbers.size() && map[r][c + 1] == Empty) {
         map[r][c + 1] = Blocked;
@@ -313,11 +313,11 @@ void Field::blockRadiusTent(const int r, const int c) {
 }
 
 void Field::blockRadiusTree(int r, int c) {
-    if (r + 1 < rowNumbers.size() && map[r+1][c] == Empty) {
-        map[r+1][c] = Blocked;
+    if (r + 1 < rowNumbers.size() && map[r + 1][c] == Empty) {
+        map[r + 1][c] = Blocked;
     }
-    if (r - 1 >= 0 && map[r-1][c] == Empty) {
-        map[r-1][c] = Blocked;
+    if (r - 1 >= 0 && map[r - 1][c] == Empty) {
+        map[r - 1][c] = Blocked;
     }
     if (c + 1 < colNumbers.size() && map[r][c + 1] == Empty) {
         map[r][c + 1] = Blocked;
@@ -329,9 +329,9 @@ void Field::blockRadiusTree(int r, int c) {
 
 bool Field::checkRadiusFor(CellContent cellContent, int r, int c) {
 
-    if (r + 1 < rowNumbers.size() && map[r+1][c] == cellContent) {
+    if (r + 1 < rowNumbers.size() && map[r + 1][c] == cellContent) {
         return true;
-    } else if (r - 1 >= 0 && map[r-1][c] == cellContent) {
+    } else if (r - 1 >= 0 && map[r - 1][c] == cellContent) {
         return true;
     } else if (c + 1 < colNumbers.size() && map[r][c + 1] == cellContent) {
         return true;
@@ -339,7 +339,7 @@ bool Field::checkRadiusFor(CellContent cellContent, int r, int c) {
         return true;
     } else {
         return false;
-            }
+    }
 }
 
 int Field::checkForCompletedRows() {
@@ -349,17 +349,17 @@ int Field::checkForCompletedRows() {
         int tentCounter = 0;
 
         for (int col = 0; col < map[row].size(); col++) {
-            if(map[row][col] == Tent) tentCounter++;
+            if (map[row][col] == Tent) tentCounter++;
 
-            }
-        if(tentCounter == rowNumber){
-                for (int col = 0; col < map[row].size(); col++) {
-                    if(map[row][col] == Empty) {
-                        map[row][col] = Blocked;
-                    }
+        }
+        if (tentCounter == rowNumber) {
+            for (int col = 0; col < map[row].size(); col++) {
+                if (map[row][col] == Empty) {
+                    map[row][col] = Blocked;
                 }
+            }
 
-                completedRows ++;
+            completedRows++;
         }
     }
     return completedRows;
@@ -372,38 +372,37 @@ int Field::checkForCompletedCols() {
         int tentCounter = 0;
 
         for (int row = 0; row < rowNumbers.size(); row++) {
-            if(map[row][col] == Tent) tentCounter++;
-            }
+            if (map[row][col] == Tent) tentCounter++;
+        }
 
-        if(tentCounter == colNumber){
+        if (tentCounter == colNumber) {
             for (int row = 0; row < rowNumbers.size(); row++) {
-                if(map[row][col] == Empty) {
+                if (map[row][col] == Empty) {
                     map[row][col] = Blocked;
                 }
             }
-            completedCols ++;
+            completedCols++;
         }
     }
     return completedCols;
 }
 
 
-size_t Field::split(const std::string &txt, std::vector<std::string> &strs, char ch)
-{
-    size_t pos = txt.find( ch );
+size_t Field::split(const std::string &txt, std::vector<std::string> &strs, char ch) {
+    size_t pos = txt.find(ch);
     size_t initialPos = 0;
     strs.clear();
 
     // Decompose statement
-    while( pos != std::string::npos ) {
-        strs.push_back( txt.substr( initialPos, pos - initialPos ) );
+    while (pos != std::string::npos) {
+        strs.push_back(txt.substr(initialPos, pos - initialPos));
         initialPos = pos + 1;
 
-        pos = txt.find( ch, initialPos );
+        pos = txt.find(ch, initialPos);
     }
 
     // Add the last one
-    strs.push_back( txt.substr( initialPos, std::min( pos, txt.size() ) - initialPos + 1 ) );
+    strs.push_back(txt.substr(initialPos, std::min(pos, txt.size()) - initialPos + 1));
 
     return strs.size();
 }
