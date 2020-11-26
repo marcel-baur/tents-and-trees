@@ -339,6 +339,46 @@ bool Field::checkRadiusFor(CellContent cellContent, int r, int c) {
             }
 }
 
+int Field::checkForCompletedRows() {
+    int completedRows = 0;
+    for (int row = 0; row < map[0].size(); row++) {
+        int rowNumber = rowNumbers[row];
+        int tentCounter = 0;
+
+        for (int col = 0; col < colNumbers.size(); col++) {
+            if(map[row][col] == Tent) tentCounter++;
+
+            if(tentCounter == rowNumber){
+                if(map[row][col] == Empty) {
+                    map[row][col] = Blocked;
+                    completedRows ++;
+                }
+            }
+        }
+    }
+    return completedRows;
+}
+
+int Field::checkForCompletedCols() {
+    int completedCols = 0;
+    for (int col = 0; col < map[0].size(); col++) {
+        int colNumber = colNumbers[col];
+        int tentCounter = 0;
+
+        for (int row = 0; row < rowNumbers.size(); row++) {
+            if(map[row][col] == Tent) tentCounter++;
+
+            if(tentCounter == colNumber){
+                if(map[row][col] == Empty) {
+                    map[row][col] = Blocked;
+                    completedCols ++;
+                }
+            }
+        }
+    }
+    return completedCols;
+}
+
 
 size_t Field::split(const std::string &txt, std::vector<std::string> &strs, char ch)
 {
