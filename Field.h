@@ -34,7 +34,6 @@ private:
     bool solveRows();
     bool solveCols();
     void blockTentRadius();
-    void solveRowsAndCols();
     int checkForCompletedRows();
     int checkForCompletedCols();
     void blockTreeWithTentRadius();
