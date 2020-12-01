@@ -77,27 +77,32 @@ vector<int> Field::getSize(const string &firstLine) {
 }
 
 void Field::printField() {
+    int row = 0;
     for (auto &i : map) {
         for (auto &j : i) {
             switch (j) {
                 case Tent:
-                    cout << "^";
+                    cout << "^" << ' ';
                     break;
                 case Tree:
-                    cout << "T";
+                    cout << "T" << ' ';
                     break;
                 case Empty:
-                    cout << ".";
+                    cout << "." << ' ';
                     break;
                 case Blocked:
-                    cout << "x";
+                    cout << "x" << ' ';
                     break;
                 default:
-                    cout << "?";
+                    cout << "?" << ' ';
             }
         }
+        cout << ' ' << rowNumbers[row];
+        row++;
         cout << '\n';
     }
+    for (auto &c : colNumbers) cout << c << ' ';
+    cout << '\n';
 }
 
 void Field::solve() {
@@ -114,6 +119,8 @@ void Field::solve() {
         blockTreeWithTentRadius();
         checkForCompletedRows();
         checkForCompletedCols();
+        placeTentForSingularTree();
+        printField();
 
         // for debugging
         cout << "solved-cols: " << checkForCompletedCols() << " space " << '\n';
