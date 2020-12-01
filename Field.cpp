@@ -6,6 +6,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <map>
 #include <iostream>
 #include <sstream>
 #include "Cell.h"
@@ -413,6 +414,7 @@ size_t Field::split(const std::string &txt, std::vector<std::string> &strs, char
 
     return strs.size();
 }
+
 /**
  * Find trees that can only have tents in one single place and put the tent there
  */
@@ -431,48 +433,228 @@ bool Field::isFieldTreeOrBlocked(CellContent cellContent) {
 
 void Field::checkTreeFieldForSingleTent(int r, int c) {
     cout << r << c << '\n';
-    cout << rowNumbers.size() << colNumbers.size() <<'\n';
+    cout << rowNumbers.size() << colNumbers.size() << '\n';
     if (c == 0 && r == 0) {
-        if (isFieldTreeOrBlocked(map[r+1][c]) && map[r][c+1] == Empty) map[r][c+1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c+1]) && map[r+1][c] == Empty) map[r+1][c] = Tent;
-    }
-    else if (c == 0 && r + 1 < rowNumbers.size()) {
-        if (isFieldTreeOrBlocked(map[r+1][c]) && isFieldTreeOrBlocked(map[r-1][c]) && map[r][c+1] == Empty) map[r][c+1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c+1]) && isFieldTreeOrBlocked(map[r-1][c]) && map[r+1][c] == Empty) map[r+1][c] = Tent;
-        if (isFieldTreeOrBlocked(map[r+1][c]) && isFieldTreeOrBlocked(map[r][c+1]) && map[r-1][c] == Empty) map[r-1][c] = Tent;
-    }
-    else if (c + 1 < colNumbers.size() && r == 0) {
-        if (isFieldTreeOrBlocked(map[r+1][c]) && isFieldTreeOrBlocked(map[r][c-1]) && map[r][c+1] == Empty) map[r][c+1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c+1]) && isFieldTreeOrBlocked(map[r][c-1]) && map[r+1][c] == Empty) map[r+1][c] = Tent;
-        if (isFieldTreeOrBlocked(map[r+1][c]) && isFieldTreeOrBlocked(map[r][c+1]) && map[r][c-1] == Empty) map[r][c-1] = Tent;
-    }
-    else if (c + 1 < colNumbers.size() && r + 1 == rowNumbers.size()) {
-        if (isFieldTreeOrBlocked(map[r-1][c]) && isFieldTreeOrBlocked(map[r][c-1]) && map[r][c+1] == Empty) map[r][c+1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c+1]) && isFieldTreeOrBlocked(map[r][c-1]) && map[r-1][c] == Empty) map[r-1][c] = Tent;
-        if (isFieldTreeOrBlocked(map[r-1][c]) && isFieldTreeOrBlocked(map[r][c+1]) && map[r][c-1] == Empty) map[r][c-1] = Tent;
-    }
-    else if (c + 1 == colNumbers.size() && r + 1 < rowNumbers.size()) {
-        if (isFieldTreeOrBlocked(map[r+1][c]) && isFieldTreeOrBlocked(map[r-1][c]) && map[r][c-1] == Empty) map[r][c-1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c-1]) && isFieldTreeOrBlocked(map[r-1][c]) && map[r+1][c] == Empty) map[r+1][c] = Tent;
-        if (isFieldTreeOrBlocked(map[r+1][c]) && isFieldTreeOrBlocked(map[r][c-1]) && map[r-1][c] == Empty) map[r-1][c] = Tent;
-    }
-    else if (c + 1 == colNumbers.size() && r + 1 == rowNumbers.size()) {
-        if (isFieldTreeOrBlocked(map[r-1][c]) && map[r][c-1] == Empty) map[r][c-1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c-1]) && map[r-1][c] == Empty) map[r-1][c] = Tent;
-    }
-    else if (c == 0 && r + 1 == rowNumbers.size()) {
+        if (isFieldTreeOrBlocked(map[r + 1][c]) && map[r][c + 1] == Empty) map[r][c + 1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c + 1]) && map[r + 1][c] == Empty) map[r + 1][c] = Tent;
+    } else if (c == 0 && r + 1 < rowNumbers.size()) {
+        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c + 1] == Empty)
+            map[r][c + 1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c + 1]) && isFieldTreeOrBlocked(map[r - 1][c]) && map[r + 1][c] == Empty)
+            map[r + 1][c] = Tent;
+        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c + 1]) && map[r - 1][c] == Empty)
+            map[r - 1][c] = Tent;
+    } else if (c + 1 < colNumbers.size() && r == 0) {
+        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c - 1]) && map[r][c + 1] == Empty)
+            map[r][c + 1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c + 1]) && isFieldTreeOrBlocked(map[r][c - 1]) && map[r + 1][c] == Empty)
+            map[r + 1][c] = Tent;
+        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c + 1]) && map[r][c - 1] == Empty)
+            map[r][c - 1] = Tent;
+    } else if (c + 1 < colNumbers.size() && r + 1 == rowNumbers.size()) {
+        if (isFieldTreeOrBlocked(map[r - 1][c]) && isFieldTreeOrBlocked(map[r][c - 1]) && map[r][c + 1] == Empty)
+            map[r][c + 1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c + 1]) && isFieldTreeOrBlocked(map[r][c - 1]) && map[r - 1][c] == Empty)
+            map[r - 1][c] = Tent;
+        if (isFieldTreeOrBlocked(map[r - 1][c]) && isFieldTreeOrBlocked(map[r][c + 1]) && map[r][c - 1] == Empty)
+            map[r][c - 1] = Tent;
+    } else if (c + 1 == colNumbers.size() && r + 1 < rowNumbers.size()) {
+        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c - 1] == Empty)
+            map[r][c - 1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c - 1]) && isFieldTreeOrBlocked(map[r - 1][c]) && map[r + 1][c] == Empty)
+            map[r + 1][c] = Tent;
+        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c - 1]) && map[r - 1][c] == Empty)
+            map[r - 1][c] = Tent;
+    } else if (c + 1 == colNumbers.size() && r + 1 == rowNumbers.size()) {
+        if (isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c - 1] == Empty) map[r][c - 1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c - 1]) && map[r - 1][c] == Empty) map[r - 1][c] = Tent;
+    } else if (c == 0 && r + 1 == rowNumbers.size()) {
         cout << "hello";
-        if (isFieldTreeOrBlocked(map[r-1][c]) && map[r][c+1] == Empty) map[r][c+1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c+1]) && map[r-1][c] == Empty) map[r-1][c] = Tent;
+        if (isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c + 1] == Empty) map[r][c + 1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c + 1]) && map[r - 1][c] == Empty) map[r - 1][c] = Tent;
+    } else if (c + 1 == colNumbers.size() && r == 0) {
+        if (isFieldTreeOrBlocked(map[r = 1][c]) && map[r][c - 1] == Empty) map[r][c - 1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c - 1]) && map[r = 1][c] == Empty) map[r = 1][c] = Tent;
+    } else {
+        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c - 1]) &&
+            isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c + 1] == Empty)
+            map[r][c + 1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c + 1]) && isFieldTreeOrBlocked(map[r][c - 1]) &&
+            isFieldTreeOrBlocked(map[r - 1][c]) && map[r + 1][c] == Empty)
+            map[r + 1][c] = Tent;
+        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c + 1]) &&
+            isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c - 1] == Empty)
+            map[r][c - 1] = Tent;
+        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c + 1]) &&
+            isFieldTreeOrBlocked(map[r][c - 1]) && map[r - 1][c] == Empty)
+            map[r - 1][c] = Tent;
     }
-    else if (c + 1 == colNumbers.size() && r == 0) {
-        if (isFieldTreeOrBlocked(map[r=1][c]) && map[r][c-1] == Empty) map[r][c-1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c-1]) && map[r=1][c] == Empty) map[r=1][c] = Tent;
+}
+
+void Field::analyzeTents() {
+    for (int r = 0; r < map.size(); r++) {
+        for (int c = 0; c < map[r].size(); c++) {
+            if (map[r][c] != Tree) continue;
+            eliminateFieldByNeighbor(r, c);
+        }
     }
-    else {
-        if (isFieldTreeOrBlocked(map[r+1][c]) && isFieldTreeOrBlocked(map[r][c-1]) && isFieldTreeOrBlocked(map[r-1][c]) && map[r][c+1] == Empty) map[r][c+1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c+1]) && isFieldTreeOrBlocked(map[r][c-1]) && isFieldTreeOrBlocked(map[r-1][c]) && map[r+1][c] == Empty) map[r+1][c] = Tent;
-        if (isFieldTreeOrBlocked(map[r+1][c]) && isFieldTreeOrBlocked(map[r][c+1]) && isFieldTreeOrBlocked(map[r-1][c]) && map[r][c-1] == Empty) map[r][c-1] = Tent;
-        if (isFieldTreeOrBlocked(map[r+1][c]) && isFieldTreeOrBlocked(map[r][c+1]) && isFieldTreeOrBlocked(map[r][c-1]) && map[r-1][c] == Empty) map[r-1][c] = Tent;
+}
+
+void Field::eliminateFieldByNeighbor(int r, int c) {
+    if (c == 0 && r == 0) {
+        int neighbors = 2;
+        vector<tuple<int, int>> list1 = getNeighbors(r+1, c);
+        vector<tuple<int, int>> list2 = getNeighbors(r, c+1);
+        std::map<tuple<int, int>, int> countMap;
+        for (auto &elem : list1) {
+            auto res = countMap.insert(std::pair<tuple<int, int>, int>(elem, 1));
+            if (res.second == false) res.first->second++;
+        }
+        for (auto &elem : list2) {
+            auto res = countMap.insert(std::pair<tuple<int, int>, int>(elem, 1));
+            if (res.second == false) res.first->second++;
+        }
+        for (auto & elem : countMap)
+        {
+            // If frequency count is greater than 1 then its a duplicate element
+            if (elem.second == neighbors)
+            {
+                  cout << elem.second << '\n';
+//                if (map[elem.second][elem.second] == Empty) map[elem.second[0]][elem.second[1]] = Blocked;
+            }
+        }
+//        if (isFieldTreeOrBlocked(map[r+1][c]) && map[r][c+1] == Empty) map[r][c+1] = Tent;
+//        if (isFieldTreeOrBlocked(map[r][c+1]) && map[r+1][c] == Empty) map[r+1][c] = Tent;
+    } else if (c == 0 && r + 1 < rowNumbers.size()) {
+        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c + 1] == Empty)
+            map[r][c + 1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c + 1]) && isFieldTreeOrBlocked(map[r - 1][c]) && map[r + 1][c] == Empty)
+            map[r + 1][c] = Tent;
+        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c + 1]) && map[r - 1][c] == Empty)
+            map[r - 1][c] = Tent;
+    } else if (c + 1 < colNumbers.size() && r == 0) {
+        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c - 1]) && map[r][c + 1] == Empty)
+            map[r][c + 1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c + 1]) && isFieldTreeOrBlocked(map[r][c - 1]) && map[r + 1][c] == Empty)
+            map[r + 1][c] = Tent;
+        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c + 1]) && map[r][c - 1] == Empty)
+            map[r][c - 1] = Tent;
+    } else if (c + 1 < colNumbers.size() && r + 1 == rowNumbers.size()) {
+        if (isFieldTreeOrBlocked(map[r - 1][c]) && isFieldTreeOrBlocked(map[r][c - 1]) && map[r][c + 1] == Empty)
+            map[r][c + 1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c + 1]) && isFieldTreeOrBlocked(map[r][c - 1]) && map[r - 1][c] == Empty)
+            map[r - 1][c] = Tent;
+        if (isFieldTreeOrBlocked(map[r - 1][c]) && isFieldTreeOrBlocked(map[r][c + 1]) && map[r][c - 1] == Empty)
+            map[r][c - 1] = Tent;
+    } else if (c + 1 == colNumbers.size() && r + 1 < rowNumbers.size()) {
+        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c - 1] == Empty)
+            map[r][c - 1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c - 1]) && isFieldTreeOrBlocked(map[r - 1][c]) && map[r + 1][c] == Empty)
+            map[r + 1][c] = Tent;
+        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c - 1]) && map[r - 1][c] == Empty)
+            map[r - 1][c] = Tent;
+    } else if (c + 1 == colNumbers.size() && r + 1 == rowNumbers.size()) {
+        if (isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c - 1] == Empty) map[r][c - 1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c - 1]) && map[r - 1][c] == Empty) map[r - 1][c] = Tent;
+    } else if (c == 0 && r + 1 == rowNumbers.size()) {
+        cout << "hello";
+        if (isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c + 1] == Empty) map[r][c + 1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c + 1]) && map[r - 1][c] == Empty) map[r - 1][c] = Tent;
+    } else if (c + 1 == colNumbers.size() && r == 0) {
+        if (isFieldTreeOrBlocked(map[r = 1][c]) && map[r][c - 1] == Empty) map[r][c - 1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c - 1]) && map[r = 1][c] == Empty) map[r = 1][c] = Tent;
+    } else {
+        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c - 1]) &&
+            isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c + 1] == Empty)
+            map[r][c + 1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c + 1]) && isFieldTreeOrBlocked(map[r][c - 1]) &&
+            isFieldTreeOrBlocked(map[r - 1][c]) && map[r + 1][c] == Empty)
+            map[r + 1][c] = Tent;
+        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c + 1]) &&
+            isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c - 1] == Empty)
+            map[r][c - 1] = Tent;
+        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c + 1]) &&
+            isFieldTreeOrBlocked(map[r][c - 1]) && map[r - 1][c] == Empty)
+            map[r - 1][c] = Tent;
+    }
+}
+
+vector<tuple<int, int>> Field::getNeighbors(int r, int c) {
+    if (c == 0 && r == 0) {
+        tuple<int, int> right(r, c + 1);
+        tuple<int, int> below(r + 1, c);
+        vector<tuple<int, int>> result;
+        result.push_back(right);
+        result.push_back(below);
+        return result;
+    } else if (c == 0 && r + 1 < rowNumbers.size()) {
+        tuple<int, int> right(r, c + 1);
+        tuple<int, int> below(r + 1, c);
+        tuple<int, int> above(r - 1, c);
+        vector<tuple<int, int>> result;
+        result.push_back(right);
+        result.push_back(below);
+        result.push_back(above);
+        return result;
+    } else if (c + 1 < colNumbers.size() && r == 0) {
+        tuple<int, int> right(r, c + 1);
+        tuple<int, int> below(r + 1, c);
+        tuple<int, int> left(r, c - 1);
+        vector<tuple<int, int>> result;
+        result.push_back(right);
+        result.push_back(below);
+        result.push_back(left);
+        return result;
+    } else if (c + 1 < colNumbers.size() && r + 1 == rowNumbers.size()) {
+        tuple<int, int> right(r, c + 1);
+        tuple<int, int> above(r - 1, c);
+        tuple<int, int> left(r, c - 1);
+        vector<tuple<int, int>> result;
+        result.push_back(right);
+        result.push_back(above);
+        result.push_back(left);
+        return result;
+    } else if (c + 1 == colNumbers.size() && r + 1 < rowNumbers.size()) {
+        tuple<int, int> below(r + 1, c);
+        tuple<int, int> above(r - 1, c);
+        tuple<int, int> left(r, c - 1);
+        vector<tuple<int, int>> result;
+        result.push_back(below);
+        result.push_back(above);
+        result.push_back(left);
+        return result;
+    } else if (c + 1 == colNumbers.size() && r + 1 == rowNumbers.size()) {
+        tuple<int, int> above(r - 1, c);
+        tuple<int, int> left(r, c - 1);
+        vector<tuple<int, int>> result;
+        result.push_back(above);
+        result.push_back(left);
+        return result;
+    } else if (c == 0 && r + 1 == rowNumbers.size()) {
+        cout << "hello";
+        tuple<int, int> right(r, c + 1);
+        tuple<int, int> above(r - 1, c);
+        vector<tuple<int, int>> result;
+        result.push_back(right);
+        result.push_back(above);
+        return result;
+    } else if (c + 1 == colNumbers.size() && r == 0) {
+        tuple<int, int> below(r + 1, c);
+        tuple<int, int> left(r, c - 1);
+        vector<tuple<int, int>> result;
+        result.push_back(below);
+        result.push_back(left);
+        return result;
+    } else {
+        tuple<int, int> right(r, c + 1);
+        tuple<int, int> below(r + 1, c);
+        tuple<int, int> above(r - 1, c);
+        tuple<int, int> left(r, c - 1);
+        vector<tuple<int, int>> result;
+        result.push_back(right);
+        result.push_back(below);
+        result.push_back(above);
+        result.push_back(left);
+        return result;
     }
 }
