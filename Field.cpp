@@ -406,3 +406,66 @@ size_t Field::split(const std::string &txt, std::vector<std::string> &strs, char
 
     return strs.size();
 }
+/**
+ * Find trees that can only have tents in one single place and put the tent there
+ */
+void Field::placeTentForSingularTree() {
+    for (int r = 0; r < map.size(); r++) {
+        for (int c = 0; c < map[r].size(); c++) {
+            if (map[r][c] != Tree) continue;
+            checkTreeFieldForSingleTent(r, c);
+        }
+    }
+}
+
+bool Field::isFieldTreeOrBlocked(CellContent cellContent) {
+    return cellContent == Tree || cellContent == Blocked;
+}
+
+void Field::checkTreeFieldForSingleTent(int r, int c) {
+    cout << r << c << '\n';
+    cout << rowNumbers.size() << colNumbers.size() <<'\n';
+    if (c == 0 && r == 0) {
+        if (isFieldTreeOrBlocked(map[r+1][c]) && map[r][c+1] == Empty) map[r][c+1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c+1]) && map[r+1][c] == Empty) map[r+1][c] = Tent;
+    }
+    else if (c == 0 && r + 1 < rowNumbers.size()) {
+        if (isFieldTreeOrBlocked(map[r+1][c]) && isFieldTreeOrBlocked(map[r-1][c]) && map[r][c+1] == Empty) map[r][c+1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c+1]) && isFieldTreeOrBlocked(map[r-1][c]) && map[r+1][c] == Empty) map[r+1][c] = Tent;
+        if (isFieldTreeOrBlocked(map[r+1][c]) && isFieldTreeOrBlocked(map[r][c+1]) && map[r-1][c] == Empty) map[r-1][c] = Tent;
+    }
+    else if (c + 1 < colNumbers.size() && r == 0) {
+        if (isFieldTreeOrBlocked(map[r+1][c]) && isFieldTreeOrBlocked(map[r][c-1]) && map[r][c+1] == Empty) map[r][c+1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c+1]) && isFieldTreeOrBlocked(map[r][c-1]) && map[r+1][c] == Empty) map[r+1][c] = Tent;
+        if (isFieldTreeOrBlocked(map[r+1][c]) && isFieldTreeOrBlocked(map[r][c+1]) && map[r][c-1] == Empty) map[r][c-1] = Tent;
+    }
+    else if (c + 1 < colNumbers.size() && r + 1 == rowNumbers.size()) {
+        if (isFieldTreeOrBlocked(map[r-1][c]) && isFieldTreeOrBlocked(map[r][c-1]) && map[r][c+1] == Empty) map[r][c+1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c+1]) && isFieldTreeOrBlocked(map[r][c-1]) && map[r-1][c] == Empty) map[r-1][c] = Tent;
+        if (isFieldTreeOrBlocked(map[r-1][c]) && isFieldTreeOrBlocked(map[r][c+1]) && map[r][c-1] == Empty) map[r][c-1] = Tent;
+    }
+    else if (c + 1 == colNumbers.size() && r + 1 < rowNumbers.size()) {
+        if (isFieldTreeOrBlocked(map[r+1][c]) && isFieldTreeOrBlocked(map[r-1][c]) && map[r][c-1] == Empty) map[r][c-1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c-1]) && isFieldTreeOrBlocked(map[r-1][c]) && map[r+1][c] == Empty) map[r+1][c] = Tent;
+        if (isFieldTreeOrBlocked(map[r+1][c]) && isFieldTreeOrBlocked(map[r][c-1]) && map[r-1][c] == Empty) map[r-1][c] = Tent;
+    }
+    else if (c + 1 == colNumbers.size() && r + 1 == rowNumbers.size()) {
+        if (isFieldTreeOrBlocked(map[r-1][c]) && map[r][c-1] == Empty) map[r][c-1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c-1]) && map[r-1][c] == Empty) map[r-1][c] = Tent;
+    }
+    else if (c == 0 && r + 1 == rowNumbers.size()) {
+        cout << "hello";
+        if (isFieldTreeOrBlocked(map[r-1][c]) && map[r][c+1] == Empty) map[r][c+1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c+1]) && map[r-1][c] == Empty) map[r-1][c] = Tent;
+    }
+    else if (c + 1 == colNumbers.size() && r == 0) {
+        if (isFieldTreeOrBlocked(map[r=1][c]) && map[r][c-1] == Empty) map[r][c-1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c-1]) && map[r=1][c] == Empty) map[r=1][c] = Tent;
+    }
+    else {
+        if (isFieldTreeOrBlocked(map[r+1][c]) && isFieldTreeOrBlocked(map[r][c-1]) && isFieldTreeOrBlocked(map[r-1][c]) && map[r][c+1] == Empty) map[r][c+1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c+1]) && isFieldTreeOrBlocked(map[r][c-1]) && isFieldTreeOrBlocked(map[r-1][c]) && map[r+1][c] == Empty) map[r+1][c] = Tent;
+        if (isFieldTreeOrBlocked(map[r+1][c]) && isFieldTreeOrBlocked(map[r][c+1]) && isFieldTreeOrBlocked(map[r-1][c]) && map[r][c-1] == Empty) map[r][c-1] = Tent;
+        if (isFieldTreeOrBlocked(map[r+1][c]) && isFieldTreeOrBlocked(map[r][c+1]) && isFieldTreeOrBlocked(map[r][c-1]) && map[r-1][c] == Empty) map[r-1][c] = Tent;
+    }
+}
