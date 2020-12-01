@@ -168,8 +168,20 @@ void Field::blockFieldsWithoutTree() {
         for (int c = 0; c < colNumbers.size(); c++) {
             if (map[r][c] == Empty) {
                 if (c == 0 && r == 0 &&
-                    map[r][c + 1] != Tree &&
-                    map[r + 1][c] != Tree) {
+                        map[r][c + 1] != Tree &&
+                        map[r + 1][c] != Tree) {
+                    map[r][c] = Blocked;
+                } else if (c == colNumbers.size() - 1 && r == rowNumbers.size() - 1 &&
+                           map[r][c - 1] != Tree &&
+                           map[r - 1][c] != Tree) {
+                    map[r][c] = Blocked;
+                } else if (c == colNumbers.size() - 1 && r == 0 &&
+                           map[r][c - 1] != Tree &&
+                           map[r + 1][c] != Tree) {
+                    map[r][c] = Blocked;
+                } else if (c == 0 && r == rowNumbers.size() - 1 &&
+                           map[r][c + 1] != Tree &&
+                           map[r - 1][c] != Tree) {
                     map[r][c] = Blocked;
                 } else if (c == 0 && r > 0 &&
                            map[r - 1][c] != Tree &&
@@ -180,10 +192,6 @@ void Field::blockFieldsWithoutTree() {
                            map[r][c - 1] != Tree &&
                            map[r][c + 1] != Tree &&
                            map[r + 1][c] != Tree) {
-                    map[r][c] = Blocked;
-                } else if (c == colNumbers.size() - 1 && r == rowNumbers.size() - 1 &&
-                           map[r][c - 1] != Tree &&
-                           map[r - 1][c] != Tree) {
                     map[r][c] = Blocked;
                 } else if (c == colNumbers.size() - 1 && r < rowNumbers.size() - 1 && r > 0 &&
                            map[r - 1][c] != Tree &&
