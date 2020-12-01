@@ -111,29 +111,17 @@ void Field::solve() {
     checkForCompletedCols();
 
     while ((rowNumbers.size() != checkForCompletedRows() && colNumbers.size() != checkForCompletedCols())) {
-        cout << 1 << '\n';
         setClearRows();
-        cout << 2 << '\n';
         setClearCols();
-        cout << 3 << '\n';
         blockFieldsWithoutTree();
-        cout << 4 << '\n';
         solveRows();
-        cout << 5 << '\n';
         solveCols();
-        cout << 6 << '\n';
         blockTentRadius();
-        cout << 7 << '\n';
         blockTreeWithTentRadius();
-        cout << 8 << '\n';
         checkForCompletedRows();
-        cout << 9 << '\n';
         checkForCompletedCols();
-        cout << 10 << '\n';
         placeTentForSingularTree();
-        cout << 11 << '\n';
         analyzeTents(); // TODO: consolidate into this function
-        cout << 12 << '\n';
         printField();
 
         // for debugging
