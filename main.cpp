@@ -3,7 +3,7 @@
 
 int main() {
     Field field;
-    field.generateFromFile("../inputs/tents-8x8-e2.txt");
+    field.generateFromFile("../inputs/tents-8x8-e1.txt");
     cout << "Solving...\n";
     field.solve();
     cout << "Solved!\n";

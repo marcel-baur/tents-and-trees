@@ -111,16 +111,29 @@ void Field::solve() {
     checkForCompletedCols();
 
     while ((rowNumbers.size() != checkForCompletedRows() && colNumbers.size() != checkForCompletedCols())) {
+        cout << 1 << '\n';
         setClearRows();
+        cout << 2 << '\n';
         setClearCols();
+        cout << 3 << '\n';
         blockFieldsWithoutTree();
+        cout << 4 << '\n';
         solveRows();
+        cout << 5 << '\n';
         solveCols();
+        cout << 6 << '\n';
         blockTentRadius();
+        cout << 7 << '\n';
         blockTreeWithTentRadius();
+        cout << 8 << '\n';
         checkForCompletedRows();
+        cout << 9 << '\n';
         checkForCompletedCols();
+        cout << 10 << '\n';
         placeTentForSingularTree();
+        cout << 11 << '\n';
+        analyzeTents(); // TODO: consolidate into this function
+        cout << 12 << '\n';
         printField();
 
         // for debugging
@@ -432,11 +445,21 @@ bool Field::isFieldTreeOrBlocked(CellContent cellContent) {
 }
 
 void Field::checkTreeFieldForSingleTent(int r, int c) {
-    cout << r << c << '\n';
-    cout << rowNumbers.size() << colNumbers.size() << '\n';
+//    cout << r << c << '\n';
+//    cout << rowNumbers.size() << colNumbers.size() << '\n';
     if (c == 0 && r == 0) {
         if (isFieldTreeOrBlocked(map[r + 1][c]) && map[r][c + 1] == Empty) map[r][c + 1] = Tent;
         if (isFieldTreeOrBlocked(map[r][c + 1]) && map[r + 1][c] == Empty) map[r + 1][c] = Tent;
+    } else if (c + 1 == colNumbers.size() && r + 1 == rowNumbers.size()) {
+        if (isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c - 1] == Empty) map[r][c - 1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c - 1]) && map[r - 1][c] == Empty) map[r - 1][c] = Tent;
+    } else if (c == 0 && r + 1 == rowNumbers.size()) {
+        cout << "hello";
+        if (isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c + 1] == Empty) map[r][c + 1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c + 1]) && map[r - 1][c] == Empty) map[r - 1][c] = Tent;
+    } else if (c + 1 == colNumbers.size() && r == 0) {
+        if (isFieldTreeOrBlocked(map[r = 1][c]) && map[r][c - 1] == Empty) map[r][c - 1] = Tent;
+        if (isFieldTreeOrBlocked(map[r][c - 1]) && map[r = 1][c] == Empty) map[r = 1][c] = Tent;
     } else if (c == 0 && r + 1 < rowNumbers.size()) {
         if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c + 1] == Empty)
             map[r][c + 1] = Tent;
@@ -445,6 +468,7 @@ void Field::checkTreeFieldForSingleTent(int r, int c) {
         if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c + 1]) && map[r - 1][c] == Empty)
             map[r - 1][c] = Tent;
     } else if (c + 1 < colNumbers.size() && r == 0) {
+        cout << 'here?' << '\n';
         if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c - 1]) && map[r][c + 1] == Empty)
             map[r][c + 1] = Tent;
         if (isFieldTreeOrBlocked(map[r][c + 1]) && isFieldTreeOrBlocked(map[r][c - 1]) && map[r + 1][c] == Empty)
@@ -465,17 +489,7 @@ void Field::checkTreeFieldForSingleTent(int r, int c) {
             map[r + 1][c] = Tent;
         if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c - 1]) && map[r - 1][c] == Empty)
             map[r - 1][c] = Tent;
-    } else if (c + 1 == colNumbers.size() && r + 1 == rowNumbers.size()) {
-        if (isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c - 1] == Empty) map[r][c - 1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c - 1]) && map[r - 1][c] == Empty) map[r - 1][c] = Tent;
-    } else if (c == 0 && r + 1 == rowNumbers.size()) {
-        cout << "hello";
-        if (isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c + 1] == Empty) map[r][c + 1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c + 1]) && map[r - 1][c] == Empty) map[r - 1][c] = Tent;
-    } else if (c + 1 == colNumbers.size() && r == 0) {
-        if (isFieldTreeOrBlocked(map[r = 1][c]) && map[r][c - 1] == Empty) map[r][c - 1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c - 1]) && map[r = 1][c] == Empty) map[r = 1][c] = Tent;
-    } else {
+    }  else {
         if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c - 1]) &&
             isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c + 1] == Empty)
             map[r][c + 1] = Tent;
@@ -501,82 +515,232 @@ void Field::analyzeTents() {
 }
 
 void Field::eliminateFieldByNeighbor(int r, int c) {
-    if (c == 0 && r == 0) {
-        int neighbors = 2;
-        vector<tuple<int, int>> list1 = getNeighbors(r+1, c);
-        vector<tuple<int, int>> list2 = getNeighbors(r, c+1);
-        std::map<tuple<int, int>, int> countMap;
-        for (auto &elem : list1) {
-            auto res = countMap.insert(std::pair<tuple<int, int>, int>(elem, 1));
-            if (res.second == false) res.first->second++;
-        }
-        for (auto &elem : list2) {
-            auto res = countMap.insert(std::pair<tuple<int, int>, int>(elem, 1));
-            if (res.second == false) res.first->second++;
-        }
-        for (auto & elem : countMap)
-        {
-            // If frequency count is greater than 1 then its a duplicate element
-            if (elem.second == neighbors)
-            {
-                  cout << elem.second << '\n';
-//                if (map[elem.second][elem.second] == Empty) map[elem.second[0]][elem.second[1]] = Blocked;
-            }
-        }
-//        if (isFieldTreeOrBlocked(map[r+1][c]) && map[r][c+1] == Empty) map[r][c+1] = Tent;
-//        if (isFieldTreeOrBlocked(map[r][c+1]) && map[r+1][c] == Empty) map[r+1][c] = Tent;
-    } else if (c == 0 && r + 1 < rowNumbers.size()) {
-        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c + 1] == Empty)
-            map[r][c + 1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c + 1]) && isFieldTreeOrBlocked(map[r - 1][c]) && map[r + 1][c] == Empty)
-            map[r + 1][c] = Tent;
-        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c + 1]) && map[r - 1][c] == Empty)
-            map[r - 1][c] = Tent;
-    } else if (c + 1 < colNumbers.size() && r == 0) {
-        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c - 1]) && map[r][c + 1] == Empty)
-            map[r][c + 1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c + 1]) && isFieldTreeOrBlocked(map[r][c - 1]) && map[r + 1][c] == Empty)
-            map[r + 1][c] = Tent;
-        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c + 1]) && map[r][c - 1] == Empty)
-            map[r][c - 1] = Tent;
-    } else if (c + 1 < colNumbers.size() && r + 1 == rowNumbers.size()) {
-        if (isFieldTreeOrBlocked(map[r - 1][c]) && isFieldTreeOrBlocked(map[r][c - 1]) && map[r][c + 1] == Empty)
-            map[r][c + 1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c + 1]) && isFieldTreeOrBlocked(map[r][c - 1]) && map[r - 1][c] == Empty)
-            map[r - 1][c] = Tent;
-        if (isFieldTreeOrBlocked(map[r - 1][c]) && isFieldTreeOrBlocked(map[r][c + 1]) && map[r][c - 1] == Empty)
-            map[r][c - 1] = Tent;
-    } else if (c + 1 == colNumbers.size() && r + 1 < rowNumbers.size()) {
-        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c - 1] == Empty)
-            map[r][c - 1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c - 1]) && isFieldTreeOrBlocked(map[r - 1][c]) && map[r + 1][c] == Empty)
-            map[r + 1][c] = Tent;
-        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c - 1]) && map[r - 1][c] == Empty)
-            map[r - 1][c] = Tent;
-    } else if (c + 1 == colNumbers.size() && r + 1 == rowNumbers.size()) {
-        if (isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c - 1] == Empty) map[r][c - 1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c - 1]) && map[r - 1][c] == Empty) map[r - 1][c] = Tent;
-    } else if (c == 0 && r + 1 == rowNumbers.size()) {
-        cout << "hello";
-        if (isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c + 1] == Empty) map[r][c + 1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c + 1]) && map[r - 1][c] == Empty) map[r - 1][c] = Tent;
-    } else if (c + 1 == colNumbers.size() && r == 0) {
-        if (isFieldTreeOrBlocked(map[r = 1][c]) && map[r][c - 1] == Empty) map[r][c - 1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c - 1]) && map[r = 1][c] == Empty) map[r = 1][c] = Tent;
-    } else {
-        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c - 1]) &&
-            isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c + 1] == Empty)
-            map[r][c + 1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c + 1]) && isFieldTreeOrBlocked(map[r][c - 1]) &&
-            isFieldTreeOrBlocked(map[r - 1][c]) && map[r + 1][c] == Empty)
-            map[r + 1][c] = Tent;
-        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c + 1]) &&
-            isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c - 1] == Empty)
-            map[r][c - 1] = Tent;
-        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c + 1]) &&
-            isFieldTreeOrBlocked(map[r][c - 1]) && map[r - 1][c] == Empty)
-            map[r - 1][c] = Tent;
+    vector<tuple<int, int>> list = getNeighbors(r, c);
+    vector<tuple<int, int>> emptyNeighbors;
+    for (auto &elem : list) {
+        if (map[std::get<0>(elem)][std::get<1>(elem)] == Empty) emptyNeighbors.push_back(elem);
     }
+
+    int neighbors = emptyNeighbors.size();
+    std::map<tuple<int, int>, int> countMap;
+
+    for (auto &en : emptyNeighbors) {
+        vector<tuple<int, int>> neighborList = getNeighbors(std::get<0>(en), std::get<1>(en));
+        for (auto &nb : neighborList) {
+            auto res = countMap.insert(std::pair<tuple<int, int>, int>(nb, 1));
+            if (res.second == false) res.first->second++;
+        }
+    }
+
+    for (auto & elem : countMap)
+    {
+        if (elem.second == neighbors)
+        {
+            tuple<int, int> coord = elem.first;
+            if (map[std::get<0>(coord)][std::get<1>(coord)] == Empty) map[std::get<0>(coord)][std::get<1>(coord)] = Blocked;
+        }
+    }
+    return;
+
+
+//    if (c == 0 && r == 0) {
+//        int neighbors = 2;
+//        vector<tuple<int, int>> list1 = getNeighbors(r+1, c);
+//        vector<tuple<int, int>> list2 = getNeighbors(r, c+1);
+//        std::map<tuple<int, int>, int> countMap;
+//        for (auto &elem : list1) {
+//            auto res = countMap.insert(std::pair<tuple<int, int>, int>(elem, 1));
+//            if (res.second == false) res.first->second++;
+//        }
+//        for (auto &elem : list2) {
+//            auto res = countMap.insert(std::pair<tuple<int, int>, int>(elem, 1));
+//            if (res.second == false) res.first->second++;
+//        }
+//        for (auto & elem : countMap)
+//        {
+//            if (elem.second == neighbors)
+//            {
+//                tuple<int, int> coord = elem.first;
+//                if (map[std::get<0>(coord)][std::get<1>(coord)] == Empty) map[std::get<0>(coord)][std::get<1>(coord)] = Blocked;
+//            }
+//        }
+//    } else if (c == 0 && r + 1 < rowNumbers.size()) {
+//        vector<tuple<int, int>> list = getNeighbors(r, c);
+//        vector<tuple<int, int>> emptyNeighbors;
+//        for (auto &elem : list) {
+//            if (map[std::get<0>(elem)][std::get<1>(elem)] == Empty) emptyNeighbors.push_back(elem);
+//        }
+//
+//        int neighbors = emptyNeighbors.size();
+//
+//        vector<tuple<int, int>> list1 = getNeighbors(r+1, c);
+//        vector<tuple<int, int>> list2 = getNeighbors(r, c+1);
+//        vector<tuple<int, int>> list3 = getNeighbors(r-1, c);
+//        std::map<tuple<int, int>, int> countMap;
+//        for (auto &elem : list1) {
+//            auto res = countMap.insert(std::pair<tuple<int, int>, int>(elem, 1));
+//            if (res.second == false) res.first->second++;
+//        }
+//        for (auto &elem : list2) {
+//            auto res = countMap.insert(std::pair<tuple<int, int>, int>(elem, 1));
+//            if (res.second == false) res.first->second++;
+//        }
+//        for (auto &elem : list3) {
+//            auto res = countMap.insert(std::pair<tuple<int, int>, int>(elem, 1));
+//            if (res.second == false) res.first->second++;
+//        }
+//        for (auto & elem : countMap)
+//        {
+//            if (elem.second == neighbors)
+//            {
+//                tuple<int, int> coord = elem.first;
+//                if (map[std::get<0>(coord)][std::get<1>(coord)] == Empty) map[std::get<0>(coord)][std::get<1>(coord)] = Blocked;
+//            }
+//        }
+//    } else if (c + 1 < colNumbers.size() && r == 0) {
+//        int neighbors = 3;
+//        vector<tuple<int, int>> list1 = getNeighbors(r+1, c);
+//        vector<tuple<int, int>> list2 = getNeighbors(r, c-1);
+//        vector<tuple<int, int>> list3 = getNeighbors(r, c+1);
+//        std::map<tuple<int, int>, int> countMap;
+//        for (auto &elem : list1) {
+//            auto res = countMap.insert(std::pair<tuple<int, int>, int>(elem, 1));
+//            if (res.second == false) res.first->second++;
+//        }
+//        for (auto &elem : list2) {
+//            auto res = countMap.insert(std::pair<tuple<int, int>, int>(elem, 1));
+//            if (res.second == false) res.first->second++;
+//        }
+//        for (auto &elem : list3) {
+//            auto res = countMap.insert(std::pair<tuple<int, int>, int>(elem, 1));
+//            if (res.second == false) res.first->second++;
+//        }
+//        for (auto & elem : countMap)
+//        {
+//            if (elem.second == neighbors)
+//            {
+//                tuple<int, int> coord = elem.first;
+//                if (map[std::get<0>(coord)][std::get<1>(coord)] == Empty) map[std::get<0>(coord)][std::get<1>(coord)] = Blocked;
+//            }
+//        }
+//    } else if (c + 1 < colNumbers.size() && r + 1 == rowNumbers.size()) {
+//        int neighbors = 3;
+//        vector<tuple<int, int>> list1 = getNeighbors(r, c+1);
+//        vector<tuple<int, int>> list2 = getNeighbors(r, c-1);
+//        vector<tuple<int, int>> list3 = getNeighbors(r-1, c);
+//        std::map<tuple<int, int>, int> countMap;
+//        for (auto &elem : list1) {
+//            auto res = countMap.insert(std::pair<tuple<int, int>, int>(elem, 1));
+//            if (res.second == false) res.first->second++;
+//        }
+//        for (auto &elem : list2) {
+//            auto res = countMap.insert(std::pair<tuple<int, int>, int>(elem, 1));
+//            if (res.second == false) res.first->second++;
+//        }
+//        for (auto &elem : list3) {
+//            auto res = countMap.insert(std::pair<tuple<int, int>, int>(elem, 1));
+//            if (res.second == false) res.first->second++;
+//        }
+//        for (auto & elem : countMap)
+//        {
+//            if (elem.second == neighbors)
+//            {
+//                tuple<int, int> coord = elem.first;
+//                if (map[std::get<0>(coord)][std::get<1>(coord)] == Empty) map[std::get<0>(coord)][std::get<1>(coord)] = Blocked;
+//            }
+//        }
+//    } else if (c + 1 == colNumbers.size() && r + 1 < rowNumbers.size()) {
+//        int neighbors = 3;
+//        vector<tuple<int, int>> list1 = getNeighbors(r+1, c);
+//        vector<tuple<int, int>> list2 = getNeighbors(r, c-1);
+//        vector<tuple<int, int>> list3 = getNeighbors(r-1, c);
+//        std::map<tuple<int, int>, int> countMap;
+//        for (auto &elem : list1) {
+//            auto res = countMap.insert(std::pair<tuple<int, int>, int>(elem, 1));
+//            if (res.second == false) res.first->second++;
+//        }
+//        for (auto &elem : list2) {
+//            auto res = countMap.insert(std::pair<tuple<int, int>, int>(elem, 1));
+//            if (res.second == false) res.first->second++;
+//        }
+//        for (auto &elem : list3) {
+//            auto res = countMap.insert(std::pair<tuple<int, int>, int>(elem, 1));
+//            if (res.second == false) res.first->second++;
+//        }
+//        for (auto & elem : countMap)
+//        {
+//            if (elem.second == neighbors)
+//            {
+//                tuple<int, int> coord = elem.first;
+//                if (map[std::get<0>(coord)][std::get<1>(coord)] == Empty) map[std::get<0>(coord)][std::get<1>(coord)] = Blocked;
+//            }
+//        }
+//    } else if (c + 1 == colNumbers.size() && r + 1 == rowNumbers.size()) {
+//        int neighbors = 2;
+//        vector<tuple<int, int>> list1 = getNeighbors(r-1, c);
+//        vector<tuple<int, int>> list2 = getNeighbors(r, c-1);
+//        std::map<tuple<int, int>, int> countMap;
+//        for (auto &elem : list1) {
+//            auto res = countMap.insert(std::pair<tuple<int, int>, int>(elem, 1));
+//            if (res.second == false) res.first->second++;
+//        }
+//        for (auto &elem : list2) {
+//            auto res = countMap.insert(std::pair<tuple<int, int>, int>(elem, 1));
+//            if (res.second == false) res.first->second++;
+//        }
+//        for (auto & elem : countMap)
+//        {
+//            if (elem.second == neighbors)
+//            {
+//                tuple<int, int> coord = elem.first;
+//                if (map[std::get<0>(coord)][std::get<1>(coord)] == Empty) map[std::get<0>(coord)][std::get<1>(coord)] = Blocked;
+//            }
+//        }
+//    } else if (c == 0 && r + 1 == rowNumbers.size()) {
+//        cout << "hello";
+//        int neighbors = 2;
+//        vector<tuple<int, int>> list1 = getNeighbors(r-1, c);
+//        vector<tuple<int, int>> list2 = getNeighbors(r, c+1);
+//        std::map<tuple<int, int>, int> countMap;
+//        for (auto &elem : list1) {
+//            auto res = countMap.insert(std::pair<tuple<int, int>, int>(elem, 1));
+//            if (res.second == false) res.first->second++;
+//        }
+//        for (auto &elem : list2) {
+//            auto res = countMap.insert(std::pair<tuple<int, int>, int>(elem, 1));
+//            if (res.second == false) res.first->second++;
+//        }
+//        for (auto & elem : countMap)
+//        {
+//            if (elem.second == neighbors)
+//            {
+//                tuple<int, int> coord = elem.first;
+//                if (map[std::get<0>(coord)][std::get<1>(coord)] == Empty) map[std::get<0>(coord)][std::get<1>(coord)] = Blocked;
+//            }
+//        }
+//    } else if (c + 1 == colNumbers.size() && r == 0) {
+//        int neighbors = 2;
+//        vector<tuple<int, int>> list1 = getNeighbors(r+1, c);
+//        vector<tuple<int, int>> list2 = getNeighbors(r, c-1);
+//        std::map<tuple<int, int>, int> countMap;
+//        for (auto &elem : list1) {
+//            auto res = countMap.insert(std::pair<tuple<int, int>, int>(elem, 1));
+//            if (res.second == false) res.first->second++;
+//        }
+//        for (auto &elem : list2) {
+//            auto res = countMap.insert(std::pair<tuple<int, int>, int>(elem, 1));
+//            if (res.second == false) res.first->second++;
+//        }
+//        for (auto & elem : countMap)
+//        {
+//            if (elem.second == neighbors)
+//            {
+//                tuple<int, int> coord = elem.first;
+//                if (map[std::get<0>(coord)][std::get<1>(coord)] == Empty) map[std::get<0>(coord)][std::get<1>(coord)] = Blocked;
+//            }
+//        }
+//    }
+    // Cannot happen for centre fields
 }
 
 vector<tuple<int, int>> Field::getNeighbors(int r, int c) {
@@ -587,6 +751,28 @@ vector<tuple<int, int>> Field::getNeighbors(int r, int c) {
         result.push_back(right);
         result.push_back(below);
         return result;
+    } else if (c + 1 == colNumbers.size() && r + 1 == rowNumbers.size()) {
+        tuple<int, int> above(r - 1, c);
+        tuple<int, int> left(r, c - 1);
+        vector<tuple<int, int>> result;
+        result.push_back(above);
+        result.push_back(left);
+        return result;
+    } else if (c == 0 && r + 1 == rowNumbers.size()) {
+        cout << "hello";
+        tuple<int, int> right(r, c + 1);
+        tuple<int, int> above(r - 1, c);
+        vector<tuple<int, int>> result;
+        result.push_back(right);
+        result.push_back(above);
+        return result;
+    } else if (c + 1 == colNumbers.size() && r == 0) {
+        tuple<int, int> below(r + 1, c);
+        tuple<int, int> left(r, c - 1);
+        vector<tuple<int, int>> result;
+        result.push_back(below);
+        result.push_back(left);
+        return result;
     } else if (c == 0 && r + 1 < rowNumbers.size()) {
         tuple<int, int> right(r, c + 1);
         tuple<int, int> below(r + 1, c);
@@ -621,28 +807,6 @@ vector<tuple<int, int>> Field::getNeighbors(int r, int c) {
         vector<tuple<int, int>> result;
         result.push_back(below);
         result.push_back(above);
-        result.push_back(left);
-        return result;
-    } else if (c + 1 == colNumbers.size() && r + 1 == rowNumbers.size()) {
-        tuple<int, int> above(r - 1, c);
-        tuple<int, int> left(r, c - 1);
-        vector<tuple<int, int>> result;
-        result.push_back(above);
-        result.push_back(left);
-        return result;
-    } else if (c == 0 && r + 1 == rowNumbers.size()) {
-        cout << "hello";
-        tuple<int, int> right(r, c + 1);
-        tuple<int, int> above(r - 1, c);
-        vector<tuple<int, int>> result;
-        result.push_back(right);
-        result.push_back(above);
-        return result;
-    } else if (c + 1 == colNumbers.size() && r == 0) {
-        tuple<int, int> below(r + 1, c);
-        tuple<int, int> left(r, c - 1);
-        vector<tuple<int, int>> result;
-        result.push_back(below);
         result.push_back(left);
         return result;
     } else {
