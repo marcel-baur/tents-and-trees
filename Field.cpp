@@ -110,7 +110,7 @@ void Field::solve() {
     checkForCompletedRows();
     checkForCompletedCols();
 
-    while ((rowNumbers.size() != checkForCompletedRows() && colNumbers.size() != checkForCompletedCols())) {
+    while ((rowNumbers.size() - 1 != checkForCompletedRows() && colNumbers.size() - 1 != checkForCompletedCols())) {
         setClearRows();
         setClearCols();
         blockFieldsWithoutTree();
