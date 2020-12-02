@@ -165,3 +165,4 @@ _deps
 *.code-workspace
 
 # End of https://www.toptal.com/developers/gitignore/api/clion,c++,vscode,cmake
+.idea
