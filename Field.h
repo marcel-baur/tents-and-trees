@@ -12,11 +12,17 @@
 
 using namespace std;
 
+struct ValidField {
+    bool result;
+    tuple<int, int> coord;
+};
+
 class Field {
 //    vector<vector<int>> map;
 public:
     void generateFromFile(const string& path);
     void solve();
+    bool solve2();
     void printField();
 
 private:
@@ -45,9 +51,16 @@ private:
     void checkTreeFieldForSingleTent(int r, int c);
     void eliminateFieldByNeighbor(int r, int c);
     void analyzeTents();
+    bool solveRec(int r, int c);
+    bool solverStep();
+    bool assertValidState();
+    bool isDone();
+    vector<vector<CellContent>> saveMap();
     vector<tuple<int,int>> getNeighbors(int r, int c);
+    ValidField findOpenField();
     static size_t split(const std::string &txt, std::vector<std::string> &strs, char ch);
 
+    vector<vector<CellContent>> restoreMap(vector<vector<CellContent>> deepCopy);
 };
 
 #endif //SAT_FIELD_H

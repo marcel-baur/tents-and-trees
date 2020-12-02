@@ -3,10 +3,16 @@
 
 int main() {
     Field field;
-    field.generateFromFile("../inputs/tents-10x10-e2.txt");
+    field.generateFromFile("../inputs/tents-15x15-t2.txt");
     cout << "Solving...\n";
-    field.solve();
+//    CellContent tree = Tree;
+//    CellContent empty = Empty;
+//    empty = tree;
+//    tree = Blocked;
+//    cout << empty << tree << '\n';
+    bool sol = field.solve2();
     cout << "Solved!\n";
+    cout << sol << '\n';
     field.printField();
 //    std::cout << "Hello, World!" << std::endl;
     return 0;

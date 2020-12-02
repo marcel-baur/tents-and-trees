@@ -13,6 +13,8 @@
 
 using namespace std;
 
+
+
 void Field::generateFromFile(const string &path) {
     ifstream file;
     file.open(path, ios::in);
@@ -130,6 +132,143 @@ void Field::solve() {
     }
 }
 
+bool Field::solverStep() {
+    checkForCompletedRows();
+    checkForCompletedCols();
+    setClearCols();
+    setClearRows();
+    blockFieldsWithoutTree();
+    solveRows();
+    solveCols();
+    blockTentRadius();
+    blockTreeWithTentRadius();
+    checkForCompletedRows();
+    checkForCompletedCols();
+    placeTentForSingularTree();
+    analyzeTents(); // TODO: consolidate into this function
+    printField();
+    return true;
+}
+
+bool Field::solve2() {
+    bool solver = solverStep();
+    ValidField next = findOpenField();
+    if (next.result) {
+        cout << "Initial rec..." << '\n';
+        return solveRec(std::get<0>(next.coord), std::get<1>(next.coord));
+    } else {
+        if (isDone()) return true;
+        return false;
+    }
+}
+
+bool Field::solveRec(int r, int c) {
+    cout << "Doing deep copy..." << '\n';
+    vector<vector<CellContent>> deepCopy = saveMap();
+    map[r][c] = Tent;
+    cout << "Rec tree placed..." << '\n';
+    bool isValid = assertValidState();
+    if (isValid) {
+        cout << "Valid rec step..." << '\n';
+        blockTentRadius();
+        checkForCompletedRows();
+        checkForCompletedCols();
+//        solverStep();
+        ValidField next = findOpenField();
+        if (next.result) {
+            if (solveRec(std::get<0>(next.coord), std::get<1>(next.coord))) {
+                return true;
+            }
+            else {
+                restoreMap(deepCopy);
+                map[r][c] = Blocked;
+                if (solveRec(std::get<0>(next.coord), std::get<1>(next.coord))) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        } else {
+            cout << "Field filled, is it done..." << '\n';
+           if (isDone()) return true;
+           return false;
+        }
+
+    } else {
+        cout << "Invalid rec step..." << '\n';
+        map[r][c] = Blocked;
+        ValidField next_alt = findOpenField();
+        if (next_alt.result) {
+            if (solveRec(std::get<0>(next_alt.coord), std::get<1>(next_alt.coord))) {
+                return true;
+            }
+            return false;
+        } else {
+            cout << "Field filled after top level rejection, is it done..." << '\n';
+
+            if (isDone()) return true;
+            return false;
+        }
+    }
+
+}
+
+vector<vector<CellContent>> Field::saveMap() {
+    cout << "Create deepCopy obj..." << '\n';
+    vector<vector<CellContent>> deepCopy;
+    for (int i = 0; i < rowNumbers.size(); i++) {
+        vector<CellContent> row(colNumbers.size(), Empty);
+        deepCopy.push_back(row);
+    }
+    cout << "deepCopy obj created, filling..." << '\n';
+    for (int r = 0; r < map.size(); r++) {
+        for (int c = 0; c < map[r].size(); c++) {
+            deepCopy[r][c] = map[r][c];
+        }
+    }
+    return deepCopy;
+}
+
+
+vector<vector<CellContent>> Field::restoreMap(vector<vector<CellContent>> deepCopy) {
+    for (int r = 0; r < map.size(); r++) {
+        for (int c = 0; c < map[r].size(); c++) {
+            map[r][c] = deepCopy[r][c];
+        }
+    }
+    return deepCopy;
+}
+bool Field::assertValidState() {
+    cout << "Checking validity..." << '\n';
+    // Check rows
+    for (int r = 0; r < map.size(); r++) {
+        int iter = 0;
+        for (int c = 0; c < map[r].size(); c++) {
+            if (map[r][c] == Tent || map[r][c] == Empty) {
+                iter++;
+            }
+        }
+        if (iter < rowNumbers[r]) {
+            printField();
+            cout << "returning false on rows " << r << ' ' << iter << ' ' << rowNumbers[r] << '\n';
+            return false;
+        }
+    }
+    //Check cols
+    for (int c = 0; c < map.size(); c++) {
+        int iter = 0;
+        for (int r = 0; r < rowNumbers.size(); r++) {
+            if (map[r][c] == Tent || map[r][c] == Empty) iter++;
+        }
+        if (iter < colNumbers[c]) {
+            printField();
+            cout << "returning false on cols " << c << ' ' << iter << ' ' << colNumbers[c] << '\n';
+            return false;
+        }
+    }
+    cout << "returning true" << '\n';
+    return true;
+}
 
 void Field::setClearRows() {
     for (int i = 0; i < rowNumbers.size(); i++) {
@@ -450,7 +589,6 @@ void Field::checkTreeFieldForSingleTent(int r, int c) {
         if (isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c - 1] == Empty) map[r][c - 1] = Tent;
         if (isFieldTreeOrBlocked(map[r][c - 1]) && map[r - 1][c] == Empty) map[r - 1][c] = Tent;
     } else if (c == 0 && r + 1 == rowNumbers.size()) {
-        cout << "hello";
         if (isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c + 1] == Empty) map[r][c + 1] = Tent;
         if (isFieldTreeOrBlocked(map[r][c + 1]) && map[r - 1][c] == Empty) map[r - 1][c] = Tent;
     } else if (c + 1 == colNumbers.size() && r == 0) {
@@ -464,7 +602,6 @@ void Field::checkTreeFieldForSingleTent(int r, int c) {
         if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c + 1]) && map[r - 1][c] == Empty)
             map[r - 1][c] = Tent;
     } else if (c + 1 < colNumbers.size() && r == 0) {
-        cout << 'here?' << '\n';
         if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c - 1]) && map[r][c + 1] == Empty)
             map[r][c + 1] = Tent;
         if (isFieldTreeOrBlocked(map[r][c + 1]) && isFieldTreeOrBlocked(map[r][c - 1]) && map[r + 1][c] == Empty)
@@ -554,7 +691,6 @@ vector<tuple<int, int>> Field::getNeighbors(int r, int c) {
         result.push_back(left);
         return result;
     } else if (c == 0 && r + 1 == rowNumbers.size()) {
-        cout << "hello";
         tuple<int, int> right(r, c + 1);
         tuple<int, int> above(r - 1, c);
         vector<tuple<int, int>> result;
@@ -617,3 +753,40 @@ vector<tuple<int, int>> Field::getNeighbors(int r, int c) {
         return result;
     }
 }
+
+ValidField Field::findOpenField() {
+    for (int r = 0; r < map.size(); r++) {
+        for (int c = 0; c < map[r].size(); c++) {
+            if (map[r][c] == Empty) return ValidField { true, tuple<int, int>(r, c)};
+        }
+    }
+    return ValidField { false, tuple<int, int>(-1, -1)} ;
+}
+
+bool Field::isDone() {
+    cout << "Checking done..." << '\n';
+    for (int r = 0; r < map.size(); r++) {
+        int tent = 0;
+        for (int c = 0; c < map[r].size(); c++) {
+            if (map[r][c] == Tent) tent++;
+        }
+
+        if (tent != rowNumbers[r]) {
+            cout << "Not done because of rows..." << '\n';
+            return false;
+        };
+    }
+    for (int c = 0; c < map.size(); c++) {
+        int tent = 0;
+        for (int r = 0; r < map[0].size(); r++) {
+            if (map[r][c] == Tent) tent++;
+        }
+        if (tent != colNumbers[c]) {
+            cout << "Not done because of cols..." << '\n';
+
+            return false;
+        };
+    }
+    return true;
+}
+
