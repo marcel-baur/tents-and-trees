@@ -109,8 +109,14 @@ void Field::printField() {
 void Field::solve() {
     checkForCompletedRows();
     checkForCompletedCols();
+    // FIXME: nicer placement
+    previousSolvedRows = 0;
+    previousSolvedCols = 0;
+    controlCheck = 0;
+    bool check = checkForChange(checkForCompletedRows(), checkForCompletedCols());
 
-    while ((rowNumbers.size() - 1 != checkForCompletedRows() && colNumbers.size() - 1 != checkForCompletedCols())) {
+    while ((rowNumbers.size() - 1 != checkForCompletedRows() && colNumbers.size() - 1 != checkForCompletedCols())
+    && check) {
         setClearRows();
         setClearCols();
         blockFieldsWithoutTree();
@@ -123,10 +129,28 @@ void Field::solve() {
         placeTentForSingularTree();
         analyzeTents(); // TODO: consolidate into this function
         printField();
+        check = checkForChange(checkForCompletedRows(), checkForCompletedCols());
+
 
         // for debugging
         cout << "solved-cols: " << checkForCompletedCols() << " space " << '\n';
         cout << "solved-rows: " << checkForCompletedRows() << " space " << '\n';
+        cout << check << '\n';
+    }
+}
+
+bool Field::checkForChange(int currentSolvedRows, int currentSolvedCols ) {
+
+    if (previousSolvedRows == currentSolvedRows
+    && previousSolvedCols == currentSolvedCols && controlCheck > 5) {
+        cout << "I`m false" << '\n';
+        return false;
+    } else {
+        previousSolvedRows = currentSolvedRows;
+        previousSolvedCols = currentSolvedCols;
+        controlCheck++;
+        cout << "I`m true" << '\n';
+        return true;
     }
 }
 
