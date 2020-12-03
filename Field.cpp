@@ -118,17 +118,25 @@ bool Field::solve() {
 
     while ((rowNumbers.size() - 1 != checkForCompletedRows() && colNumbers.size() - 1 != checkForCompletedCols())
     && check) {
-        setClearRows();
-        setClearCols();
+//        setClearRows();
+//        setClearCols();
+//        blockFieldsWithoutTree();
+
+
         blockFieldsWithoutTree();
-        solveRows();
-        solveCols();
+        setClearCols();
+        setClearRows();
+        analyzeRowsAndCols();
+//        analyzeRowsAndCols();
         blockTentRadius();
-        blockTreeWithTentRadius();
-        checkForCompletedRows();
-        checkForCompletedCols();
+
+
+//        blockTentRadius();
+//        blockTreeWithTentRadius();
+//        checkForCompletedRows();
+//        checkForCompletedCols();
         placeTentForSingularTree();
-        analyzeTents(); // TODO: consolidate into this function
+//        analyzeTents(); // TODO: consolidate into this function
         printField();
         check = checkForChange(checkForCompletedRows(), checkForCompletedCols());
 
@@ -138,6 +146,8 @@ bool Field::solve() {
         cout << "solved-rows: " << checkForCompletedRows() << " space " << '\n';
         cout << check << '\n';
     }
+    cout << "LOOP STOPPED \n";
+    printField();
     if (!isDone()) return solve2();
     return false;
 }
@@ -180,8 +190,8 @@ bool Field::solve2() {
     blockFieldsWithoutTree();
     setClearCols();
     setClearRows();
-    markNonBranching();
-    markNonBranching();
+    analyzeRowsAndCols();
+    analyzeRowsAndCols();
     blockTentRadius();
 
     ValidField next = findOpenField();
@@ -202,7 +212,7 @@ bool Field::solveRec(int r, int c) {
     bool isValid = assertValidMove(r,c);
     if (isValid) {
         blockRadiusTent(r, c);
-//        markNonBranching();
+//        analyzeRowsAndCols();
         solveColRowForField(r, c);
 //        checkForCompletedRows();
 //        checkForCompletedCols();
@@ -232,6 +242,8 @@ bool Field::solveRec(int r, int c) {
             if (solveRec(std::get<0>(next_alt.coord), std::get<1>(next_alt.coord))) {
                 return true;
             }
+            cout << r << c << '\n';
+//            printField();
             return false;
         } else {
             if (isDone()) return true;
@@ -285,7 +297,7 @@ void Field::solveColRowForField(int r, int c) {
 
 }
 
-void Field::markNonBranching() {
+void Field::analyzeRowsAndCols() {
     for (int r = 0; r < rowNumbers.size(); r++) {
         int freeFields = 0;
         int tents = 0;
@@ -905,7 +917,6 @@ bool Field::assertValidSum(int r, int c) {
 int Field::countTreesRec(int r, int c, vector<tuple<int, int>>* pred) {
     pred->push_back(tuple<int, int>(r, c));
     if (map[r][c] == Tree) {
-        cout << "Pred len: " << pred->size() << " r: " << r << " c: " << c << '\n';
         int parity = 1;
         for (auto &n : getNeighbors(r, c)) {
             if (!containsTuple(pred, n)) parity += countTentsRec(std::get<0>(n), std::get<1>(n), pred);
@@ -918,7 +929,6 @@ int Field::countTreesRec(int r, int c, vector<tuple<int, int>>* pred) {
 int Field::countTentsRec(int r, int c, vector<tuple<int, int>> *pred) {
     pred->push_back(tuple<int, int>(r, c));
     if (map[r][c] == Tent) {
-        cout << "Pred len: " << pred->size() << " r: " << r << " c: " << c << '\n';
         int parity = -1;
         for (auto &n : getNeighbors(r, c)) {
             if (!containsTuple(pred, n)) parity += countTreesRec(std::get<0>(n), std::get<1>(n), pred);

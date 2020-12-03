@@ -58,7 +58,7 @@ private:
     bool solverStep();
     bool assertValidState();
     bool isDone();
-    void markNonBranching();
+    void analyzeRowsAndCols();
     bool assertValidMove(int r, int c);
     bool assertValidSum(int r, int c);
     void solveColRowForField(int r, int c);
