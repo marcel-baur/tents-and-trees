@@ -21,7 +21,7 @@ class Field {
 //    vector<vector<int>> map;
 public:
     void generateFromFile(const string& path);
-    void solve();
+    bool solve();
     bool solve2();
     void printField();
 
