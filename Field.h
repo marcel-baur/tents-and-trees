@@ -58,6 +58,14 @@ private:
     bool solverStep();
     bool assertValidState();
     bool isDone();
+    void markNonBranching();
+    bool assertValidMove(int r, int c);
+    bool assertValidSum(int r, int c);
+    void solveColRowForField(int r, int c);
+    bool assertValidParity(int r, int c);
+    int countTreesRec(int r, int c, vector<tuple<int, int>>* pred);
+    int countTentsRec(int r, int c, vector<tuple<int, int>>* pred);
+    bool assertNoNeighbouringTents(int r, int c);
     vector<vector<CellContent>> saveMap();
     vector<tuple<int,int>> getNeighbors(int r, int c);
     ValidField findOpenField();
@@ -65,6 +73,8 @@ private:
     bool checkForChange(int currentSolvedRows, int currentSolvedCols);
 
     vector<vector<CellContent>> restoreMap(vector<vector<CellContent>> deepCopy);
+
+    static bool containsTuple(vector<tuple<int, int>>* vec, tuple<int, int> tup);
 };
 
 #endif //SAT_FIELD_H

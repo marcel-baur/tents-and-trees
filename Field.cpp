@@ -93,7 +93,7 @@ void Field::printField() {
                     cout << "." << ' ';
                     break;
                 case Blocked:
-                    cout << "x" << ' ';
+                    cout << "o" << ' ';
                     break;
                 default:
                     cout << "?" << ' ';
@@ -138,6 +138,8 @@ bool Field::solve() {
         cout << "solved-rows: " << checkForCompletedRows() << " space " << '\n';
         cout << check << '\n';
     }
+    if (!isDone()) return solve2();
+    return false;
 }
 
 bool Field::checkForChange(int currentSolvedRows, int currentSolvedCols ) {
@@ -153,34 +155,39 @@ bool Field::checkForChange(int currentSolvedRows, int currentSolvedCols ) {
         cout << "I`m true" << '\n';
         return true;
     }
-    if (!isDone()) {
-        return solve2();
-    } else {
-        return true;
-    }
 }
 
 bool Field::solverStep() {
-    checkForCompletedRows();
-    checkForCompletedCols();
-    setClearCols();
-    setClearRows();
-    blockFieldsWithoutTree();
+//    checkForCompletedRows();
+//    checkForCompletedCols();
+//    setClearCols();
+//    setClearRows();
+//    blockFieldsWithoutTree();
     solveRows();
     solveCols();
     blockTentRadius();
-    blockTreeWithTentRadius();
+//    blockTreeWithTentRadius();
     checkForCompletedRows();
     checkForCompletedCols();
     placeTentForSingularTree();
-    analyzeTents(); // TODO: consolidate into this function
-    printField();
+//    analyzeTents(); // TODO: consolidate into this function
+//    printField();
     return true;
 }
 
 bool Field::solve2() {
-    bool solver = solverStep();
+//    bool solver = solverStep();
+    blockFieldsWithoutTree();
+    setClearCols();
+    setClearRows();
+    markNonBranching();
+    markNonBranching();
+    blockTentRadius();
+
     ValidField next = findOpenField();
+//    checkForCompletedRows();
+//    checkForCompletedCols();
+//    blockTentRadius();
     if (next.result) {
         return solveRec(std::get<0>(next.coord), std::get<1>(next.coord));
     } else {
@@ -192,11 +199,13 @@ bool Field::solve2() {
 bool Field::solveRec(int r, int c) {
     vector<vector<CellContent>> deepCopy = saveMap();
     map[r][c] = Tent;
-    bool isValid = assertValidState();
+    bool isValid = assertValidMove(r,c);
     if (isValid) {
-        blockTentRadius();
-        checkForCompletedRows();
-        checkForCompletedCols();
+        blockRadiusTent(r, c);
+//        markNonBranching();
+        solveColRowForField(r, c);
+//        checkForCompletedRows();
+//        checkForCompletedCols();
 //        solverStep();
         ValidField next = findOpenField();
         if (next.result) {
@@ -230,6 +239,79 @@ bool Field::solveRec(int r, int c) {
         }
     }
 
+}
+
+void Field::solveColRowForField(int r, int c) {
+    int tentsR = 0;
+    int freeR = 0;
+    for (int col = 0; col < colNumbers.size(); col++) {
+        if (map[r][col] == Tent) tentsR++;
+        if (map[r][col] == Empty) freeR++;
+    }
+
+    if (freeR == rowNumbers[r] - tentsR) {
+//        cout << "Completed, place remaining \n";
+//        cout << "Row: " << r << ", Tents: " << tentsR << ", Empty: "<< freeR << ", rowNumber: "<< rowNumbers[r] << '\n';
+//        printField();
+        for (int col = 0; col < colNumbers.size(); col++) {
+            if (map[r][col] == Empty) map[r][col] = Tent;
+        }
+    }
+    if (tentsR == rowNumbers[r]) {
+//        cout << "Completed, cross out remaining \n";
+//        cout << "Row: " << r << ", Tents: " << tentsR << ", Empty: "<< freeR << ", rowNumber: "<< rowNumbers[r] << '\n';
+//        printField();
+        for (int col = 0; col < colNumbers.size(); col++) {
+            if (map[r][col] == Empty) map[r][col] = Blocked;
+        }
+    }
+
+    int tentsC = 0;
+    int freeC = 0;
+    for (int row = 0; row < rowNumbers.size(); row++) {
+        if (map[row][c] == Tent) tentsC++;
+        if (map[row][c] == Empty) freeC++;
+    }
+    if (tentsC + freeC == colNumbers[c]) {
+        for (int row = 0; row < rowNumbers.size(); row++) {
+            if (map[row][c] == Empty) map[row][c] = Tent;
+        }
+    }
+    if (tentsC == colNumbers[c]) {
+        for (int row = 0; row < rowNumbers.size(); row++) {
+            if (map[row][c] == Empty) map[row][c] = Blocked;
+        }
+    }
+
+}
+
+void Field::markNonBranching() {
+    for (int r = 0; r < rowNumbers.size(); r++) {
+        int freeFields = 0;
+        int tents = 0;
+        for (int c = 0; c < colNumbers.size(); c++) {
+            if (map[r][c] == Empty) freeFields++;
+            if (map[r][c] == Tent) tents++;
+        }
+        if (freeFields + tents == rowNumbers[r]) {
+            for (int c = 0; c < colNumbers.size(); c++) {
+                if (map[r][c] == Empty) map[r][c] = Tent;
+            }
+        }
+    }
+    for (int c = 0; c < colNumbers.size(); c++) {
+        int freeFields = 0;
+        int tents = 0;
+        for (int r = 0; r < rowNumbers.size(); r++) {
+            if (map[r][c] == Empty) freeFields++;
+            if (map[r][c] == Tent) tents++;
+        }
+        if (freeFields + tents == colNumbers[c]) {
+            for (int r = 0; r < rowNumbers.size(); r++) {
+                if (map[r][c] == Empty) map[r][c] = Tent;
+            }
+        }
+    }
 }
 
 vector<vector<CellContent>> Field::saveMap() {
@@ -789,5 +871,79 @@ bool Field::isDone() {
 
     }
     return true;
+}
+
+bool Field::assertNoNeighbouringTents(int r, int c) {
+    vector neighbors = getNeighbors(r, c);
+//    cout << neighbors.size() << '\n';
+    for (auto &n : neighbors) {
+        if (map[std::get<0>(n)][std::get<1>(n)] == Tent) return false;
+    }
+    return true;
+}
+
+bool Field::assertValidMove(int r, int c) {
+    return assertNoNeighbouringTents(r, c) && assertValidSum(r, c)&& assertValidParity(r, c);
+}
+
+bool Field::assertValidSum(int r, int c) {
+    int rowSum = 0;
+    for (int col = 0; col < colNumbers.size(); col++) {
+        if (map[r][col] == Tent) rowSum++;
+    }
+    if (rowSum > rowNumbers[r]) return false;
+
+    int colSum = 0;
+    for (int row = 0; row < rowNumbers.size(); row++) {
+        if (map[row][c] == Tent) colSum++;
+    }
+    if (colSum > colNumbers[c]) return false;
+
+    return true;
+}
+
+int Field::countTreesRec(int r, int c, vector<tuple<int, int>>* pred) {
+    pred->push_back(tuple<int, int>(r, c));
+    if (map[r][c] == Tree) {
+        cout << "Pred len: " << pred->size() << " r: " << r << " c: " << c << '\n';
+        int parity = 1;
+        for (auto &n : getNeighbors(r, c)) {
+            if (!containsTuple(pred, n)) parity += countTentsRec(std::get<0>(n), std::get<1>(n), pred);
+        }
+        return parity;
+    }
+    return 0;
+}
+
+int Field::countTentsRec(int r, int c, vector<tuple<int, int>> *pred) {
+    pred->push_back(tuple<int, int>(r, c));
+    if (map[r][c] == Tent) {
+        cout << "Pred len: " << pred->size() << " r: " << r << " c: " << c << '\n';
+        int parity = -1;
+        for (auto &n : getNeighbors(r, c)) {
+            if (!containsTuple(pred, n)) parity += countTreesRec(std::get<0>(n), std::get<1>(n), pred);
+        }
+        return parity;
+    }
+    return 0;
+}
+
+bool Field::assertValidParity(int r, int c) {
+    int parity = -1;
+    vector<tuple<int, int>> pred;
+    pred.emplace_back(r, c);
+    for (auto &n : getNeighbors(r, c)) {
+        parity += countTreesRec(std::get<0>(n), std::get<1>(n), &pred);
+    }
+    if (parity >= 0) return true;
+    return false;
+}
+
+
+bool Field::containsTuple(vector<tuple<int, int>>* vec, tuple<int, int> tup) {
+    for (auto &t : *vec) {
+        if (std::get<0>(t) == std::get<0>(tup) && std::get<1>(t) == std::get<1>(tup)) return true;
+    }
+    return false;
 }
 
