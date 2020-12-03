@@ -110,8 +110,14 @@ void Field::printField() {
 bool Field::solve() {
     checkForCompletedRows();
     checkForCompletedCols();
+    // FIXME: nicer placement
+    previousSolvedRows = 0;
+    previousSolvedCols = 0;
+    controlCheck = 0;
+    bool check = checkForChange(checkForCompletedRows(), checkForCompletedCols());
 
-    while ((rowNumbers.size() != checkForCompletedRows() && colNumbers.size() != checkForCompletedCols())) {
+    while ((rowNumbers.size() - 1 != checkForCompletedRows() && colNumbers.size() - 1 != checkForCompletedCols())
+    && check) {
         setClearRows();
         setClearCols();
         blockFieldsWithoutTree();
@@ -124,10 +130,28 @@ bool Field::solve() {
         placeTentForSingularTree();
         analyzeTents(); // TODO: consolidate into this function
         printField();
+        check = checkForChange(checkForCompletedRows(), checkForCompletedCols());
+
 
         // for debugging
         cout << "solved-cols: " << checkForCompletedCols() << " space " << '\n';
         cout << "solved-rows: " << checkForCompletedRows() << " space " << '\n';
+        cout << check << '\n';
+    }
+}
+
+bool Field::checkForChange(int currentSolvedRows, int currentSolvedCols ) {
+
+    if (previousSolvedRows == currentSolvedRows
+    && previousSolvedCols == currentSolvedCols && controlCheck > 5) {
+        cout << "I`m false" << '\n';
+        return false;
+    } else {
+        previousSolvedRows = currentSolvedRows;
+        previousSolvedCols = currentSolvedCols;
+        controlCheck++;
+        cout << "I`m true" << '\n';
+        return true;
     }
     if (!isDone()) {
         return solve2();
@@ -395,8 +419,8 @@ bool Field::solveCols() {
         int tents = tentsInCol(col);
         // cout << tents << '\n';
         if (colNumber - tents == emptyFields && colNumber != 0) {
-            for (int j = 0; j < map.size(); j++) {
-                if (map[j][col] == Empty) map[j][col] = Tent;
+            for (auto & j : map) {
+                if (j[col] == Empty) j[col] = Tent;
                 changed = true;
             }
         }
@@ -647,7 +671,7 @@ void Field::eliminateFieldByNeighbor(int r, int c) {
         vector<tuple<int, int>> neighborList = getNeighbors(std::get<0>(en), std::get<1>(en));
         for (auto &nb : neighborList) {
             auto res = countMap.insert(std::pair<tuple<int, int>, int>(nb, 1));
-            if (res.second == false) res.first->second++;
+            if (!res.second) res.first->second++;
         }
     }
 

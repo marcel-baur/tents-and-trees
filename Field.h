@@ -30,6 +30,9 @@ private:
     vector<vector<CellContent>> map;
     vector<int> rowNumbers;
     vector<int> colNumbers;
+    int previousSolvedRows;
+    int previousSolvedCols;
+    int controlCheck;
     void setClearRows();
     void setClearCols();
     void blockFieldsWithoutTree();
@@ -59,6 +62,7 @@ private:
     vector<tuple<int,int>> getNeighbors(int r, int c);
     ValidField findOpenField();
     static size_t split(const std::string &txt, std::vector<std::string> &strs, char ch);
+    bool checkForChange(int currentSolvedRows, int currentSolvedCols);
 
     vector<vector<CellContent>> restoreMap(vector<vector<CellContent>> deepCopy);
 };
