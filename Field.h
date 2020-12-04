@@ -12,11 +12,17 @@
 
 using namespace std;
 
+struct ValidField {
+    bool result;
+    tuple<int, int> coord;
+};
+
 class Field {
 //    vector<vector<int>> map;
 public:
     void generateFromFile(const string& path);
-    void solve();
+    bool solve();
+    bool solve2();
     void printField();
 
 private:
@@ -48,10 +54,27 @@ private:
     void checkTreeFieldForSingleTent(int r, int c);
     void eliminateFieldByNeighbor(int r, int c);
     void analyzeTents();
+    bool solveRec(int r, int c);
+    bool solverStep();
+    bool assertValidState();
+    bool isDone();
+    void analyzeRowsAndCols();
+    bool assertValidMove(int r, int c);
+    bool assertValidSum(int r, int c);
+    void solveColRowForField(int r, int c);
+    bool assertValidParity(int r, int c);
+    int countTreesRec(int r, int c, vector<tuple<int, int>>* pred);
+    int countTentsRec(int r, int c, vector<tuple<int, int>>* pred);
+    bool assertNoNeighbouringTents(int r, int c);
+    vector<vector<CellContent>> saveMap();
     vector<tuple<int,int>> getNeighbors(int r, int c);
+    ValidField findOpenField();
     static size_t split(const std::string &txt, std::vector<std::string> &strs, char ch);
     bool checkForChange(int currentSolvedRows, int currentSolvedCols);
 
+    vector<vector<CellContent>> restoreMap(vector<vector<CellContent>> deepCopy);
+
+    static bool containsTuple(vector<tuple<int, int>>* vec, tuple<int, int> tup);
 };
 
 #endif //SAT_FIELD_H

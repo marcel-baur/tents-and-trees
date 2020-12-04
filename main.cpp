@@ -1,13 +1,21 @@
 #include <iostream>
 #include "Field.h"
+#include <chrono>
+
+using namespace std::chrono;
 
 int main() {
     Field field;
-    field.generateFromFile("../inputs/tents-15x15-e2.txt");
+    field.generateFromFile("../inputs/test1.txt");
     cout << "Solving...\n";
-    field.solve();
-    cout << "Solved!\n";
+    int begin = duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    bool sol = field.solve2();
+    int end = duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    cout << '\n';
     field.printField();
-//    std::cout << "Hello, World!" << std::endl;
+    cout << "Solved!\n";
+    cout << "Solution: " << sol << '\n';
+    int time = end - begin;
+    cout << time << '\n';
     return 0;
 }
