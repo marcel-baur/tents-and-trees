@@ -108,85 +108,6 @@ void Field::printField() {
 }
 
 bool Field::solve() {
-    checkForCompletedRows();
-    checkForCompletedCols();
-    // FIXME: nicer placement
-    previousSolvedRows = 0;
-    previousSolvedCols = 0;
-    controlCheck = 0;
-    bool check = checkForChange(checkForCompletedRows(), checkForCompletedCols());
-
-    while ((rowNumbers.size() - 1 != checkForCompletedRows() && colNumbers.size() - 1 != checkForCompletedCols())
-    && check) {
-//        setClearRows();
-//        setClearCols();
-//        blockFieldsWithoutTree();
-
-
-        blockFieldsWithoutTree();
-        setClearCols();
-        setClearRows();
-        analyzeRowsAndCols();
-//        analyzeRowsAndCols();
-        blockTentRadius();
-
-
-//        blockTentRadius();
-//        blockTreeWithTentRadius();
-//        checkForCompletedRows();
-//        checkForCompletedCols();
-        placeTentForSingularTree();
-//        analyzeTents(); // TODO: consolidate into this function
-        printField();
-        check = checkForChange(checkForCompletedRows(), checkForCompletedCols());
-
-
-        // for debugging
-        cout << "solved-cols: " << checkForCompletedCols() << " space " << '\n';
-        cout << "solved-rows: " << checkForCompletedRows() << " space " << '\n';
-        cout << check << '\n';
-    }
-    cout << "LOOP STOPPED \n";
-    printField();
-    if (!isDone()) return solve2();
-    return false;
-}
-
-bool Field::checkForChange(int currentSolvedRows, int currentSolvedCols ) {
-
-    if (previousSolvedRows == currentSolvedRows
-    && previousSolvedCols == currentSolvedCols && controlCheck > 5) {
-        cout << "I`m false" << '\n';
-        return false;
-    } else {
-        previousSolvedRows = currentSolvedRows;
-        previousSolvedCols = currentSolvedCols;
-        controlCheck++;
-        cout << "I`m true" << '\n';
-        return true;
-    }
-}
-
-bool Field::solverStep() {
-//    checkForCompletedRows();
-//    checkForCompletedCols();
-//    setClearCols();
-//    setClearRows();
-//    blockFieldsWithoutTree();
-    solveRows();
-    solveCols();
-    blockTentRadius();
-//    blockTreeWithTentRadius();
-    checkForCompletedRows();
-    checkForCompletedCols();
-    placeTentForSingularTree();
-//    analyzeTents(); // TODO: consolidate into this function
-//    printField();
-    return true;
-}
-
-bool Field::solve2() {
-//    bool solver = solverStep();
     blockFieldsWithoutTree();
     setClearCols();
     setClearRows();
@@ -195,9 +116,6 @@ bool Field::solve2() {
     blockTentRadius();
 
     ValidField next = findOpenField();
-//    checkForCompletedRows();
-//    checkForCompletedCols();
-//    blockTentRadius();
     if (next.result) {
         return solveRec(std::get<0>(next.coord), std::get<1>(next.coord));
     } else {
@@ -212,11 +130,7 @@ bool Field::solveRec(int r, int c) {
     bool isValid = assertValidMove(r,c);
     if (isValid) {
         blockRadiusTent(r, c);
-//        analyzeRowsAndCols();
         solveColRowForField(r, c);
-//        checkForCompletedRows();
-//        checkForCompletedCols();
-//        solverStep();
         ValidField next = findOpenField();
         if (next.result) {
             if (solveRec(std::get<0>(next.coord), std::get<1>(next.coord))) {
@@ -242,8 +156,6 @@ bool Field::solveRec(int r, int c) {
             if (solveRec(std::get<0>(next_alt.coord), std::get<1>(next_alt.coord))) {
                 return true;
             }
-            cout << r << c << '\n';
-//            printField();
             return false;
         } else {
             if (isDone()) return true;
@@ -262,17 +174,11 @@ void Field::solveColRowForField(int r, int c) {
     }
 
     if (freeR == rowNumbers[r] - tentsR) {
-//        cout << "Completed, place remaining \n";
-//        cout << "Row: " << r << ", Tents: " << tentsR << ", Empty: "<< freeR << ", rowNumber: "<< rowNumbers[r] << '\n';
-//        printField();
         for (int col = 0; col < colNumbers.size(); col++) {
             if (map[r][col] == Empty) map[r][col] = Tent;
         }
     }
     if (tentsR == rowNumbers[r]) {
-//        cout << "Completed, cross out remaining \n";
-//        cout << "Row: " << r << ", Tents: " << tentsR << ", Empty: "<< freeR << ", rowNumber: "<< rowNumbers[r] << '\n';
-//        printField();
         for (int col = 0; col < colNumbers.size(); col++) {
             if (map[r][col] == Empty) map[r][col] = Blocked;
         }
@@ -350,29 +256,7 @@ vector<vector<CellContent>> Field::restoreMap(vector<vector<CellContent>> deepCo
     return deepCopy;
 }
 
-bool Field::assertValidState() {
-    // Check rows
-    for (int r = 0; r < map.size(); r++) {
-        int iter = 0;
-        for (int c = 0; c < map[r].size(); c++) {
-            if (map[r][c] == Tent || map[r][c] == Empty) {
-                iter++;
-            }
-        }
-        if (iter < rowNumbers[r]) return false;
 
-    }
-    //Check cols
-    for (int c = 0; c < map.size(); c++) {
-        int iter = 0;
-        for (int r = 0; r < rowNumbers.size(); r++) {
-            if (map[r][c] == Tent || map[r][c] == Empty) iter++;
-        }
-        if (iter < colNumbers[c]) return false;
-
-    }
-    return true;
-}
 
 void Field::setClearRows() {
     for (int i = 0; i < rowNumbers.size(); i++) {
@@ -446,99 +330,11 @@ void Field::blockFieldsWithoutTree() {
     }
 }
 
-int Field::emptyFieldsInRow(int row) {
-    int result = 0;
-    for (int i = 0; i < map[row].size(); i++) {
-        if (map[row][i] == Empty) {
-            result++;
-        }
-    }
-    return result;
-}
-
-int Field::emptyFieldsInCol(int col) {
-    int result = 0;
-    for (int i = 0; i < map.size(); i++) {
-        if (map[i][col] == Empty) {
-            result++;
-        }
-    }
-    return result;
-}
-
-
-int Field::tentsInRow(int row) {
-    int result = 0;
-    for (int i = 0; i < map[row].size(); i++) {
-        if (map[row][i] == Tent) {
-            result++;
-        }
-    }
-    return result;
-}
-
-int Field::tentsInCol(int col) {
-    int result = 0;
-    for (int i = 0; i < map.size(); i++) {
-        if (map[i][col] == Tent) {
-            result++;
-        }
-    }
-    return result;
-}
-
-
-bool Field::solveRows() {
-    bool changed = false;
-    for (int i = 0; i < map.size(); i++) {
-        int rowNumber = rowNumbers[i];
-        int emptyFields = emptyFieldsInRow(i);
-        int tents = tentsInRow(i);
-        if (rowNumber - tents == emptyFields && rowNumber != 0) {
-            for (int j = 0; j < map[i].size(); j++) {
-                if (map[i][j] == Empty) map[i][j] = Tent;
-                changed = true;
-            }
-        }
-    }
-    return changed;
-}
-
-
-bool Field::solveCols() {
-    bool changed = false;
-    for (int col = 0; col < map[0].size(); col++) {
-        int colNumber = colNumbers[col];
-        int emptyFields = emptyFieldsInCol(col);
-        int tents = tentsInCol(col);
-        // cout << tents << '\n';
-        if (colNumber - tents == emptyFields && colNumber != 0) {
-            for (auto & j : map) {
-                if (j[col] == Empty) j[col] = Tent;
-                changed = true;
-            }
-        }
-    }
-    return changed;
-}
-
 void Field::blockTentRadius() {
     for (int r = 0; r < rowNumbers.size(); r++) {
         for (int c = 0; c < colNumbers.size(); c++) {
             if (map[r][c] == Tent) {
                 blockRadiusTent(r, c);
-            }
-        }
-    }
-}
-
-void Field::blockTreeWithTentRadius() {
-    for (int r = 0; r < rowNumbers.size(); r++) {
-        for (int c = 0; c < colNumbers.size(); c++) {
-            if (map[r][c] == Tree) {
-                if (checkRadiusFor(Tent, r, c)) {
-                    blockRadiusTree(r, c);
-                }
             }
         }
     }
@@ -572,81 +368,6 @@ void Field::blockRadiusTent(const int r, const int c) {
     }
 }
 
-void Field::blockRadiusTree(int r, int c) {
-    if (r + 1 < rowNumbers.size() && map[r + 1][c] == Empty) {
-        map[r + 1][c] = Blocked;
-    }
-    if (r - 1 >= 0 && map[r - 1][c] == Empty) {
-        map[r - 1][c] = Blocked;
-    }
-    if (c + 1 < colNumbers.size() && map[r][c + 1] == Empty) {
-        map[r][c + 1] = Blocked;
-    }
-    if (c - 1 >= 0 && map[r][c - 1] == Empty) {
-        map[r][c - 1] = Blocked;
-    }
-}
-
-bool Field::checkRadiusFor(CellContent cellContent, int r, int c) {
-
-    if (r + 1 < rowNumbers.size() && map[r + 1][c] == cellContent) {
-        return true;
-    } else if (r - 1 >= 0 && map[r - 1][c] == cellContent) {
-        return true;
-    } else if (c + 1 < colNumbers.size() && map[r][c + 1] == cellContent) {
-        return true;
-    } else if (c - 1 >= 0 && map[r][c - 1] == cellContent) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-int Field::checkForCompletedRows() {
-    int completedRows = 0;
-    for (int row = 0; row < map.size(); row++) {
-        int rowNumber = rowNumbers[row];
-        int tentCounter = 0;
-
-        for (int col = 0; col < map[row].size(); col++) {
-            if (map[row][col] == Tent) tentCounter++;
-
-        }
-        if (tentCounter == rowNumber) {
-            for (int col = 0; col < map[row].size(); col++) {
-                if (map[row][col] == Empty) {
-                    map[row][col] = Blocked;
-                }
-            }
-
-            completedRows++;
-        }
-    }
-    return completedRows;
-}
-
-int Field::checkForCompletedCols() {
-    int completedCols = 0;
-    for (int col = 0; col < colNumbers.size(); col++) {
-        int colNumber = colNumbers[col];
-        int tentCounter = 0;
-
-        for (int row = 0; row < rowNumbers.size(); row++) {
-            if (map[row][col] == Tent) tentCounter++;
-        }
-
-        if (tentCounter == colNumber) {
-            for (int row = 0; row < rowNumbers.size(); row++) {
-                if (map[row][col] == Empty) {
-                    map[row][col] = Blocked;
-                }
-            }
-            completedCols++;
-        }
-    }
-    return completedCols;
-}
-
 
 size_t Field::split(const std::string &txt, std::vector<std::string> &strs, char ch) {
     size_t pos = txt.find(ch);
@@ -665,117 +386,6 @@ size_t Field::split(const std::string &txt, std::vector<std::string> &strs, char
     strs.push_back(txt.substr(initialPos, std::min(pos, txt.size()) - initialPos + 1));
 
     return strs.size();
-}
-
-/**
- * Find trees that can only have tents in one single place and put the tent there
- */
-void Field::placeTentForSingularTree() {
-    for (int r = 0; r < map.size(); r++) {
-        for (int c = 0; c < map[r].size(); c++) {
-            if (map[r][c] != Tree) continue;
-            checkTreeFieldForSingleTent(r, c);
-        }
-    }
-}
-
-bool Field::isFieldTreeOrBlocked(CellContent cellContent) {
-    return cellContent == Tree || cellContent == Blocked;
-}
-
-void Field::checkTreeFieldForSingleTent(int r, int c) {
-//    cout << r << c << '\n';
-//    cout << rowNumbers.size() << colNumbers.size() << '\n';
-    if (c == 0 && r == 0) {
-        if (isFieldTreeOrBlocked(map[r + 1][c]) && map[r][c + 1] == Empty) map[r][c + 1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c + 1]) && map[r + 1][c] == Empty) map[r + 1][c] = Tent;
-    } else if (c + 1 == colNumbers.size() && r + 1 == rowNumbers.size()) {
-        if (isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c - 1] == Empty) map[r][c - 1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c - 1]) && map[r - 1][c] == Empty) map[r - 1][c] = Tent;
-    } else if (c == 0 && r + 1 == rowNumbers.size()) {
-        if (isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c + 1] == Empty) map[r][c + 1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c + 1]) && map[r - 1][c] == Empty) map[r - 1][c] = Tent;
-    } else if (c + 1 == colNumbers.size() && r == 0) {
-        if (isFieldTreeOrBlocked(map[r = 1][c]) && map[r][c - 1] == Empty) map[r][c - 1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c - 1]) && map[r = 1][c] == Empty) map[r = 1][c] = Tent;
-    } else if (c == 0 && r + 1 < rowNumbers.size()) {
-        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c + 1] == Empty)
-            map[r][c + 1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c + 1]) && isFieldTreeOrBlocked(map[r - 1][c]) && map[r + 1][c] == Empty)
-            map[r + 1][c] = Tent;
-        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c + 1]) && map[r - 1][c] == Empty)
-            map[r - 1][c] = Tent;
-    } else if (c + 1 < colNumbers.size() && r == 0) {
-        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c - 1]) && map[r][c + 1] == Empty)
-            map[r][c + 1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c + 1]) && isFieldTreeOrBlocked(map[r][c - 1]) && map[r + 1][c] == Empty)
-            map[r + 1][c] = Tent;
-        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c + 1]) && map[r][c - 1] == Empty)
-            map[r][c - 1] = Tent;
-    } else if (c + 1 < colNumbers.size() && r + 1 == rowNumbers.size()) {
-        if (isFieldTreeOrBlocked(map[r - 1][c]) && isFieldTreeOrBlocked(map[r][c - 1]) && map[r][c + 1] == Empty)
-            map[r][c + 1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c + 1]) && isFieldTreeOrBlocked(map[r][c - 1]) && map[r - 1][c] == Empty)
-            map[r - 1][c] = Tent;
-        if (isFieldTreeOrBlocked(map[r - 1][c]) && isFieldTreeOrBlocked(map[r][c + 1]) && map[r][c - 1] == Empty)
-            map[r][c - 1] = Tent;
-    } else if (c + 1 == colNumbers.size() && r + 1 < rowNumbers.size()) {
-        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c - 1] == Empty)
-            map[r][c - 1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c - 1]) && isFieldTreeOrBlocked(map[r - 1][c]) && map[r + 1][c] == Empty)
-            map[r + 1][c] = Tent;
-        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c - 1]) && map[r - 1][c] == Empty)
-            map[r - 1][c] = Tent;
-    } else {
-        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c - 1]) &&
-            isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c + 1] == Empty)
-            map[r][c + 1] = Tent;
-        if (isFieldTreeOrBlocked(map[r][c + 1]) && isFieldTreeOrBlocked(map[r][c - 1]) &&
-            isFieldTreeOrBlocked(map[r - 1][c]) && map[r + 1][c] == Empty)
-            map[r + 1][c] = Tent;
-        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c + 1]) &&
-            isFieldTreeOrBlocked(map[r - 1][c]) && map[r][c - 1] == Empty)
-            map[r][c - 1] = Tent;
-        if (isFieldTreeOrBlocked(map[r + 1][c]) && isFieldTreeOrBlocked(map[r][c + 1]) &&
-            isFieldTreeOrBlocked(map[r][c - 1]) && map[r - 1][c] == Empty)
-            map[r - 1][c] = Tent;
-    }
-}
-
-void Field::analyzeTents() {
-    for (int r = 0; r < map.size(); r++) {
-        for (int c = 0; c < map[r].size(); c++) {
-            if (map[r][c] != Tree) continue;
-            eliminateFieldByNeighbor(r, c);
-        }
-    }
-}
-
-void Field::eliminateFieldByNeighbor(int r, int c) {
-    vector<tuple<int, int>> list = getNeighbors(r, c);
-    vector<tuple<int, int>> emptyNeighbors;
-    for (auto &elem : list) {
-        if (map[std::get<0>(elem)][std::get<1>(elem)] == Empty) emptyNeighbors.push_back(elem);
-    }
-
-    int neighbors = emptyNeighbors.size();
-    std::map<tuple<int, int>, int> countMap;
-
-    for (auto &en : emptyNeighbors) {
-        vector<tuple<int, int>> neighborList = getNeighbors(std::get<0>(en), std::get<1>(en));
-        for (auto &nb : neighborList) {
-            auto res = countMap.insert(std::pair<tuple<int, int>, int>(nb, 1));
-            if (!res.second) res.first->second++;
-        }
-    }
-
-    for (auto &elem : countMap) {
-        if (elem.second == neighbors) {
-            tuple<int, int> coord = elem.first;
-            if (map[std::get<0>(coord)][std::get<1>(coord)] == Empty)
-                map[std::get<0>(coord)][std::get<1>(coord)] = Blocked;
-        }
-    }
 }
 
 vector<tuple<int, int>> Field::getNeighbors(int r, int c) {
@@ -887,7 +497,6 @@ bool Field::isDone() {
 
 bool Field::assertNoNeighbouringTents(int r, int c) {
     vector neighbors = getNeighbors(r, c);
-//    cout << neighbors.size() << '\n';
     for (auto &n : neighbors) {
         if (map[std::get<0>(n)][std::get<1>(n)] == Tent) return false;
     }
