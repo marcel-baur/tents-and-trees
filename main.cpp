@@ -6,7 +6,7 @@ using namespace std::chrono;
 
 int main() {
     Field field;
-    field.generateFromFile("../inputs/tents-8x8-e1.txt");
+    field.generateFromFile("../inputs/tents-8x8-t1.txt");
     cout << "Solving...\n";
     int begin = duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     bool sol = field.solve();

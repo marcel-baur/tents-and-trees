@@ -271,8 +271,8 @@ void Field::setClearRows() {
 void Field::setClearCols() {
     for (int i = 0; i < colNumbers.size(); i++) {
         if (colNumbers[i] == 0) {
-            for (int j = 0; j < map.size(); j++) {
-                if (map[j][i] == Empty) map[j][i] = Blocked;
+            for (auto & j : map) {
+                if (j[i] == Empty) j[i] = Blocked;
             }
         }
     }
