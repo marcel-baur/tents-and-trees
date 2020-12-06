@@ -28,6 +28,7 @@ public:
 private:
     static vector<int> getSize(const string& firstLine);
     vector<vector<CellContent>> map;
+    vector<vector<CellContent>> solution;
     vector<int> rowNumbers;
     vector<int> colNumbers;
     void setClearRows();
@@ -54,6 +55,8 @@ private:
     vector<vector<CellContent>> restoreMap(vector<vector<CellContent>> deepCopy);
 
     static bool containsTuple(vector<tuple<int, int>>* vec, tuple<int, int> tup);
+
+    void print(vector<vector<CellContent>> field);
 };
 
 #endif //SAT_FIELD_H

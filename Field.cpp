@@ -31,11 +31,19 @@ void Field::generate(int r, int c) {
     std::uniform_int_distribution<int> dis_rows(0,r-1);
     std::uniform_int_distribution<int> dis_cols(0,c-1);
 
+    int graceCounter = 0;
+    for (auto &row : map) {
+        rowNumbers.push_back(0);
+    }
+
+    for (int i = 0; i < c; i++) {
+        colNumbers.push_back(0);
+    }
+    vector<vector<CellContent>> emptyMap = saveMap();
     for (int i = 0; i < amountOfTrees; i++) {
-
         bool treePlaced = false;
-
         while(!treePlaced) {
+
             rowNumbers.clear();
             colNumbers.clear();
             for (auto &row : map) {
@@ -47,7 +55,17 @@ void Field::generate(int r, int c) {
             }
             int randRow = dis_rows(generator);
             int randCol = dis_cols(generator);
-            if (map[randRow][randCol] != Empty) continue;
+            cout << "Setting tree #" << i << " on: " << randRow << ' ' << randCol << '\n';
+            print(map);
+            if (map[randRow][randCol] != Empty) {
+                graceCounter++;
+                if (graceCounter > 5) {
+                    restoreMap(emptyMap);
+                    i = 0;
+                    break;
+                }
+                continue;
+            }
             vector<vector<CellContent>> copy = saveMap();
             map[randRow][randCol] = Tree;
             vector<tuple<int,int>> nb = getNeighbors(randRow, randCol);
@@ -61,12 +79,12 @@ void Field::generate(int r, int c) {
                 }
             }
             if (!tentPlaced) {
-                printField();
                 restoreMap(copy);
                 continue;
             }
 
             treePlaced = true;
+            graceCounter--;
         }
     }
     colNumbers.clear();
@@ -86,7 +104,14 @@ void Field::generate(int r, int c) {
         }
         colNumbers.push_back(trees);
     }
-    printField();
+    solution = saveMap();
+    for (auto &row:map){
+        for (auto &col:row) {
+            if (col == Blocked || col == Tent) col = Empty;
+        }
+    }
+    print(map);
+    print(solution);
     return;
 
 }
@@ -134,7 +159,7 @@ void Field::generateFromFile(const string &path) {
             }
             currLine++;
         }
-        printField();
+        print(map);
     } else {
         cout << "Could not open file." << '\n';
     }
@@ -159,6 +184,35 @@ vector<int> Field::getSize(const string &firstLine) {
 void Field::printField() {
     int row = 0;
     for (auto &i : map) {
+        for (auto &j : i) {
+            switch (j) {
+                case Tent:
+                    cout << "^" << ' ';
+                    break;
+                case Tree:
+                    cout << "T" << ' ';
+                    break;
+                case Empty:
+                    cout << "." << ' ';
+                    break;
+                case Blocked:
+                    cout << "o" << ' ';
+                    break;
+                default:
+                    cout << "?" << ' ';
+            }
+        }
+        cout << ' ' << rowNumbers[row];
+        row++;
+        cout << '\n';
+    }
+    for (auto &c : colNumbers) cout << c << ' ';
+    cout << '\n';
+}
+
+void Field::print(vector<vector<CellContent>> field) {
+    int row = 0;
+    for (auto &i : field) {
         for (auto &j : i) {
             switch (j) {
                 case Tent:
