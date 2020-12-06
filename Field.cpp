@@ -9,9 +9,87 @@
 #include <map>
 #include <iostream>
 #include <sstream>
+#include <cmath>
+#include <random>
 #include "Cell.h"
 
 using namespace std;
+
+
+void Field::generate(int r, int c) {
+    for (int i = 0; i < r; i++) {
+        vector<CellContent> row(c, Empty);
+        map.push_back(row);
+    }
+    float f_row = r;
+    float f_col = c;
+
+    float f_amountOfTrees = (f_col + f_row) * ((f_col+f_row)/20);
+    int amountOfTrees = floor(f_amountOfTrees);
+    cout << amountOfTrees << '\n';
+    std::random_device generator;
+    std::uniform_int_distribution<int> dis_rows(0,r-1);
+    std::uniform_int_distribution<int> dis_cols(0,c-1);
+
+    for (int i = 0; i < amountOfTrees; i++) {
+
+        bool treePlaced = false;
+
+        while(!treePlaced) {
+            rowNumbers.clear();
+            colNumbers.clear();
+            for (auto &row : map) {
+                rowNumbers.push_back(0);
+            }
+
+            for (int i = 0; i < c; i++) {
+                colNumbers.push_back(0);
+            }
+            int randRow = dis_rows(generator);
+            int randCol = dis_cols(generator);
+            if (map[randRow][randCol] != Empty) continue;
+            vector<vector<CellContent>> copy = saveMap();
+            map[randRow][randCol] = Tree;
+            vector<tuple<int,int>> nb = getNeighbors(randRow, randCol);
+            bool tentPlaced = false;
+            for (auto &n:nb) {
+                if (map[std::get<0>(n)][std::get<1>(n)] == Empty && !tentPlaced) {
+                    map[std::get<0>(n)][std::get<1>(n)] = Tent;
+                    blockRadiusTent(std::get<0>(n), std::get<1>(n));
+                    tentPlaced = true;
+//                    break;
+                }
+            }
+            if (!tentPlaced) {
+                printField();
+                restoreMap(copy);
+                continue;
+            }
+
+            treePlaced = true;
+        }
+    }
+    colNumbers.clear();
+    rowNumbers.clear();
+    for (auto &row : map) {
+        int trees = 0;
+        for (auto &col : row) {
+            if (col == Tent) trees++;
+        }
+        rowNumbers.push_back(trees);
+    }
+
+    for (int i = 0; i < c; i++) {
+        int trees = 0;
+        for (int j = 0; j < r; j++) {
+            if (map[j][i] == Tent) trees++;
+        }
+        colNumbers.push_back(trees);
+    }
+    printField();
+    return;
+
+}
 
 
 void Field::generateFromFile(const string &path) {
@@ -51,7 +129,7 @@ void Field::generateFromFile(const string &path) {
                         colNumbers.push_back(stoi(s));
                     }
                 } catch (const exception &e) {
-                    cout << "ERROR in colNumbers" << e.what();
+                    cout << "ERROR in colNumbers" << e.what() << '\n';
                 }
             }
             currLine++;
@@ -566,3 +644,11 @@ bool Field::containsTuple(vector<tuple<int, int>>* vec, tuple<int, int> tup) {
     return false;
 }
 
+
+bool Field::neighborsContainField(int r, int c, CellContent type) {
+    vector<tuple<int, int>> neighbors = getNeighbors(r, c);
+    for (auto &n : neighbors) {
+        if (map[std::get<0>(n)][std::get<1>(n)] == type) return true;
+    }
+    return false;
+}

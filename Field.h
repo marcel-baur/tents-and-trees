@@ -21,6 +21,7 @@ class Field {
 
 public:
     void generateFromFile(const string& path);
+    void generate(int r, int c);
     bool solve();
     void printField();
 
@@ -44,6 +45,7 @@ private:
     int countTreesRec(int r, int c, vector<tuple<int, int>>* pred);
     int countTentsRec(int r, int c, vector<tuple<int, int>>* pred);
     bool assertNoNeighbouringTents(int r, int c);
+    bool neighborsContainField(int r, int c, CellContent type);
     vector<vector<CellContent>> saveMap();
     vector<tuple<int,int>> getNeighbors(int r, int c);
     ValidField findOpenField();
