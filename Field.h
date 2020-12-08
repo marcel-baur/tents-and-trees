@@ -21,12 +21,14 @@ class Field {
 
 public:
     void generateFromFile(const string& path);
+    void generate(int r, int c);
     bool solve();
     void printField();
 
 private:
     static vector<int> getSize(const string& firstLine);
     vector<vector<CellContent>> map;
+    vector<vector<CellContent>> solution;
     vector<int> rowNumbers;
     vector<int> colNumbers;
     void setClearRows();
@@ -44,6 +46,7 @@ private:
     int countTreesRec(int r, int c, vector<tuple<int, int>>* pred);
     int countTentsRec(int r, int c, vector<tuple<int, int>>* pred);
     bool assertNoNeighbouringTents(int r, int c);
+    bool neighborsContainField(int r, int c, CellContent type);
     vector<vector<CellContent>> saveMap();
     vector<tuple<int,int>> getNeighbors(int r, int c);
     ValidField findOpenField();
@@ -52,6 +55,8 @@ private:
     vector<vector<CellContent>> restoreMap(vector<vector<CellContent>> deepCopy);
 
     static bool containsTuple(vector<tuple<int, int>>* vec, tuple<int, int> tup);
+
+    void print(vector<vector<CellContent>> field);
 };
 
 #endif //SAT_FIELD_H
