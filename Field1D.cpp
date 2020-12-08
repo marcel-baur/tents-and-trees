@@ -80,41 +80,75 @@ vector<int> Field1D::getSize(const string &firstLine) {
 void Field1D::flattenVector(vector<vector<CellContent>> map) {
     mapCells.clear();
 
-    for (int i = 0; i < map.size(); i++){
-        for (int j = 0; j < map[i].size(); j++){
+    for (int i = 0; i < map.size(); i++) {
+        for (int j = 0; j < map[i].size(); j++) {
             mapCells.push_back(map[i][j]);
         }
     }
 }
 
-void Field1D::printField() {
+void Field1D::printMapCells(vector<CellContent> cells) {
+    int cell = 0;
     int row = 0;
-    for (auto &i : map) {
-        for (auto &j : i) {
-            switch (j) {
-                case Tent:
-                    cout << "^" << ' ';
-                    break;
-                case Tree:
-                    cout << "T" << ' ';
-                    break;
-                case Empty:
-                    cout << "." << ' ';
-                    break;
-                case Blocked:
-                    cout << "o" << ' ';
-                    break;
-                default:
-                    cout << "?" << ' ';
-            }
+    for (auto &j : cells) {
+        switch (j) {
+            case Tent:
+                cout << "^" << ' ';
+                break;
+            case Tree:
+                cout << "T" << ' ';
+                break;
+            case Empty:
+                cout << "." << ' ';
+                break;
+            case Blocked:
+                cout << "o" << ' ';
+                break;
+            default:
+                cout << "?" << ' ';
         }
-        cout << ' ' << rowNumbers[row];
-        row++;
-        cout << '\n';
+        if (cell % colNumbers.size() == colNumbers.size() - 1) {
+            cout << ' ' << rowNumbers[row];
+            cout << '\n';
+            row++;
+        }
+        cell++;
     }
     for (auto &c : colNumbers) cout << c << ' ';
     cout << '\n';
 }
+
+void Field1D::printField() {
+    int cell = 0;
+    int row = 0;
+    for (auto &j : mapCells) {
+        switch (j) {
+            case Tent:
+                cout << "^" << ' ';
+                break;
+            case Tree:
+                cout << "T" << ' ';
+                break;
+            case Empty:
+                cout << "." << ' ';
+                break;
+            case Blocked:
+                cout << "o" << ' ';
+                break;
+            default:
+                cout << "?" << ' ';
+        }
+        if (cell % colNumbers.size() == colNumbers.size() - 1) {
+            cout << ' ' << rowNumbers[row];
+            cout << '\n';
+            row++;
+        }
+        cell++;
+    }
+    for (auto &c : colNumbers) cout << c << ' ';
+    cout << '\n';
+}
+
 
 bool Field1D::solve() {
     flattenVector(map);
@@ -125,30 +159,31 @@ bool Field1D::solve() {
     analyzeRowsAndCols();
     blockRadiusOfAllTents();
 
-    ValidField next = findOpenField();
+    ValidField1D next = findOpenField();
     if (next.result) {
-        return solveRec(std::get<0>(next.coord), std::get<1>(next.coord));
+        return solveRec(next.coord);
     } else {
         if (isDone()) return true;
         return false;
     }
 }
 
-bool Field1D::solveRec(int r, int c) {
+bool Field1D::solveRec(int coord) {
+    printField();
     vector<CellContent> deepCopy = saveMap();
-    map[r][c] = Tent;
-    bool isValid = assertValidMove(r,c);
+    mapCells[coord] = Tent;
+    bool isValid = assertValidMove(coord);
     if (isValid) {
-        blockRadiusTent(r, c);
-        solveColRowForField(r, c);
-        ValidField next = findOpenField();
+        blockRadiusTent(coord);
+        solveColRowForField(coord);
+        ValidField1D next = findOpenField();
         if (next.result) {
-            if (solveRec(std::get<0>(next.coord), std::get<1>(next.coord))) {
+            if (solveRec(next.coord)) {
                 return true;
             } else {
                 restoreMap(deepCopy);
-                map[r][c] = Blocked;
-                if (solveRec(std::get<0>(next.coord), std::get<1>(next.coord))) {
+                mapCells[coord] = Blocked;
+                if (solveRec(next.coord)) {
                     return true;
                 } else {
                     return false;
@@ -160,10 +195,10 @@ bool Field1D::solveRec(int r, int c) {
         }
 
     } else {
-        map[r][c] = Blocked;
-        ValidField next_alt = findOpenField();
+        mapCells[coord] = Blocked;
+        ValidField1D next_alt = findOpenField();
         if (next_alt.result) {
-            if (solveRec(std::get<0>(next_alt.coord), std::get<1>(next_alt.coord))) {
+            if (solveRec(next_alt.coord)) {
                 return true;
             }
             return false;
@@ -175,77 +210,42 @@ bool Field1D::solveRec(int r, int c) {
 
 }
 
-void Field1D::solveColRowForField(int r, int c) {
-    int tentsR = 0;
-    int freeR = 0;
-    for (int col = 0; col < colNumbers.size(); col++) {
-        if (map[r][col] == Tent) tentsR++;
-        if (map[r][col] == Empty) freeR++;
-    }
-
-    if (freeR == rowNumbers[r] - tentsR) {
-        for (int col = 0; col < colNumbers.size(); col++) {
-            if (map[r][col] == Empty) map[r][col] = Tent;
-        }
-    }
-    if (tentsR == rowNumbers[r]) {
-        for (int col = 0; col < colNumbers.size(); col++) {
-            if (map[r][col] == Empty) map[r][col] = Blocked;
-        }
-    }
-
-    int tentsC = 0;
-    int freeC = 0;
-    for (int row = 0; row < rowNumbers.size(); row++) {
-        if (map[row][c] == Tent) tentsC++;
-        if (map[row][c] == Empty) freeC++;
-    }
-    if (tentsC + freeC == colNumbers[c]) {
-        for (int row = 0; row < rowNumbers.size(); row++) {
-            if (map[row][c] == Empty) map[row][c] = Tent;
-        }
-    }
-    if (tentsC == colNumbers[c]) {
-        for (int row = 0; row < rowNumbers.size(); row++) {
-            if (map[row][c] == Empty) map[row][c] = Blocked;
-        }
-    }
-
-}
 
 void Field1D::analyzeRowsAndCols() {
-    for (int r = 0; r < rowNumbers.size(); r++) {
+
+    for (int row = 0; row < rowNumbers.size(); row++) {
         int freeFields = 0;
         int tents = 0;
-        for (int c = r*colNumbers.size(); c < (r+1)*colNumbers.size(); c++) {
-            if (mapCells[c] == Empty) freeFields++;
-            if (mapCells[c] == Tent) tents++;
+        for (int coord = row * colNumbers.size(); coord < (row + 1) * colNumbers.size(); coord++) {
+            if (mapCells[coord] == Empty) freeFields++;
+            if (mapCells[coord] == Tent) tents++;
         }
-        if (freeFields + tents == rowNumbers[r]) {
-            for (int c = r*colNumbers.size(); c < (r+1)*colNumbers.size(); c++) {
+        if (freeFields + tents == rowNumbers[row]) {
+            for (int c = row * colNumbers.size(); c < (row + 1) * colNumbers.size(); c++) {
                 if (mapCells[c] == Empty) mapCells[c] = Tent;
             }
         }
     }
-    for (int c = 0; c < colNumbers.size(); c++) {
+
+    for (int column = 0; column < colNumbers.size(); column++) {
         int freeFields = 0;
         int tents = 0;
-        for (int r = c; r <= c + colNumbers.size() * c; r += rowNumbers.size()) {
-            if (mapCells[r] == Empty) freeFields++;
-            if (mapCells[r] == Tent) tents++;
+        for (int coord = column; coord <= mapCells.size() - (colNumbers.size() - column); coord += colNumbers.size()) {
+            if (mapCells[coord] == Empty) freeFields++;
+            if (mapCells[coord] == Tent) tents++;
         }
-        if (freeFields + tents == colNumbers[c]) {
-            for (int r = c; r <= c + colNumbers.size() * c; r += rowNumbers.size()) {
-                if (mapCells[r] == Empty) mapCells[r] = Tent;
+        if (freeFields + tents == colNumbers[column]) {
+            for (int coord = column; coord <= mapCells.size() - (colNumbers.size() - column); coord += colNumbers.size()) {
+                if (mapCells[coord] == Empty) mapCells[coord] = Tent;
             }
         }
     }
 }
 
 vector<CellContent> Field1D::saveMap() {
-    vector<CellContent> deepCopy;
+    vector<CellContent> deepCopy(mapCells.size(), Empty);
     for (int i = 0; i < mapCells.size(); i++) {
-        deepCopy.push_back(mapCells[i]);
+        deepCopy[i] = mapCells[i];
     }
     return deepCopy;
 }
@@ -260,68 +260,70 @@ vector<CellContent> Field1D::restoreMap(vector<CellContent> deepCopy) {
 
 
 void Field1D::setClearRows() {
-    for (int r = 0; r < rowNumbers.size(); r++) {
-        if (rowNumbers[r] == 0) {
-            for (int c = r*colNumbers.size(); c < (r+1)*colNumbers.size(); c++) {
-                if (mapCells[c] == Empty) mapCells[c] = Blocked;
+    for (int row = 0; row < rowNumbers.size(); row++) {
+        if (rowNumbers[row] == 0) {
+            for (int coord = row * colNumbers.size(); coord < (row + 1) * colNumbers.size(); coord++) {
+                if (mapCells[coord] == Empty) mapCells[coord] = Blocked;
             }
         }
     }
 }
 
 void Field1D::setClearCols() {
-    for (int r = 0; r < colNumbers.size(); r++) {
-        if (colNumbers[r] == 0) {
-            for (int c = r*colNumbers.size(); c < (r+1)*colNumbers.size(); c++) {
-                if (mapCells[c] == Empty) mapCells[c] = Blocked;
+    for (int column = 0; column < colNumbers.size(); column++) {
+        if (colNumbers[column] == 0) {
+            for (int coord = column;
+                 coord <= mapCells.size() - (colNumbers.size() - column); coord += colNumbers.size()) {
+                if (mapCells[coord] == Empty) mapCells[coord] = Blocked;
             }
         }
     }
 }
 
 void Field1D::blockFieldsWithoutTree() {
+    printField();
     for (int coord = 0; coord < mapCells.size(); coord++) {
         if (mapCells[coord] == Empty) {
             if (coord == 0 &&
-                rightOf(coord) != Tree &&
-                belowOf(coord) != Tree) {
+                mapCells[rightOf(coord)] != Tree &&
+                mapCells[belowOf(coord)] != Tree) {
                 mapCells[coord] = Blocked;
             } else if (coord == mapCells.size() - 1 &&
-                       leftOf(coord) != Tree &&
-                       aboveOf(coord) != Tree) {
+                       mapCells[leftOf(coord)] != Tree &&
+                       mapCells[aboveOf(coord)] != Tree) {
                 mapCells[coord] = Blocked;
             } else if (coord == colNumbers.size() - 1 &&
-                       leftOf(coord) != Tree &&
-                       belowOf(coord) != Tree) {
+                       mapCells[leftOf(coord)] != Tree &&
+                       mapCells[belowOf(coord)] != Tree) {
                 mapCells[coord] = Blocked;
-            } else if (coord == mapCells.size()-(colNumbers.size() - 1) &&
-                       rightOf(coord) != Tree &&
-                       aboveOf(coord) != Tree) {
+            } else if (coord == mapCells.size() - (colNumbers.size() - 1) &&
+                       mapCells[rightOf(coord)] != Tree &&
+                       mapCells[aboveOf(coord)] != Tree) {
                 mapCells[coord] = Blocked;
-            } else if (coord %colNumbers.size() == 0 &&
-                       aboveOf(coord) != Tree &&
-                       rightOf(coord) != Tree &&
-                       belowOf(coord) != Tree) {
+            } else if (coord % colNumbers.size() == 0 &&
+                       mapCells[aboveOf(coord)] != Tree &&
+                       mapCells[rightOf(coord)] != Tree &&
+                       mapCells[belowOf(coord)] != Tree) {
                 mapCells[coord] = Blocked;
             } else if (coord < colNumbers.size() &&
-                       leftOf(coord) != Tree &&
-                       rightOf(coord) != Tree &&
-                       belowOf(coord) != Tree) {
+                       mapCells[leftOf(coord)] != Tree &&
+                       mapCells[rightOf(coord)] != Tree &&
+                       mapCells[belowOf(coord)] != Tree) {
                 mapCells[coord] = Blocked;
-            } else if (coord %rowNumbers.size() == colNumbers.size() - 1 &&
-                       aboveOf(coord) != Tree &&
-                       leftOf(coord) != Tree &&
-                       belowOf(coord) != Tree) {
+            } else if (coord % colNumbers.size() == colNumbers.size() - 1 && // colN sstatt rowN
+                       mapCells[aboveOf(coord)] != Tree &&
+                       mapCells[leftOf(coord)] != Tree &&
+                       mapCells[belowOf(coord)] != Tree) {
                 mapCells[coord] = Blocked;
             } else if (coord >= (rowNumbers.size() - 1) * colNumbers.size() &&
-                       leftOf(coord) != Tree &&
-                       rightOf(coord) != Tree &&
-                       aboveOf(coord) != Tree) {
+                       mapCells[leftOf(coord)] != Tree &&
+                       mapCells[rightOf(coord)] != Tree &&
+                       mapCells[aboveOf(coord)] != Tree) {
                 mapCells[coord] = Blocked;
-            } else if (aboveOf(coord) != Tree &&
-                       leftOf(coord) != Tree &&
-                       belowOf(coord) != Tree &&
-                       rightOf(coord) != Tree) {
+            } else if (mapCells[aboveOf(coord)] != Tree &&
+                       mapCells[leftOf(coord)] != Tree &&
+                       mapCells[belowOf(coord)] != Tree &&
+                       mapCells[rightOf(coord)] != Tree) {
                 mapCells[coord] = Blocked;
             }
         }
@@ -337,30 +339,34 @@ void Field1D::blockRadiusOfAllTents() {
     }
 }
 
-void Field1D::blockRadiusTent(const int r) {
-    if (r < (rowNumbers.size() - 1)*colNumbers.size() && belowOf(r) == Empty) {
-        mapCells[belowOf(r)] = Blocked;
+void Field1D::blockRadiusTent(const int coord) {
+    printField();
+    if (coord < (rowNumbers.size() - 1) * colNumbers.size() && mapCells[belowOf(coord)] == Empty) {
+        mapCells[belowOf(coord)] = Blocked;
     }
-    if (r > colNumbers.size() - 1 && aboveOf(r) == Empty) {
-        mapCells[aboveOf(r)] = Blocked;
+    if (coord >= colNumbers.size() - 1 && mapCells[aboveOf(coord)] == Empty) {
+        mapCells[aboveOf(coord)] = Blocked;
     }
-    if (r %rowNumbers.size() != colNumbers.size() - 1  && rightOf(r) == Empty) {
-        mapCells[rightOf(r)] = Blocked;
+    if (coord % colNumbers.size() != colNumbers.size() - 1 && mapCells[rightOf(coord)] == Empty) {
+        mapCells[rightOf(coord)] = Blocked;
     }
-    if (r %colNumbers.size() != 0 && leftOf(r) == Empty) {
-        mapCells[leftOf(r)] = Blocked;
+    if (coord % colNumbers.size() != 0 && mapCells[leftOf(coord)] == Empty) {
+        mapCells[leftOf(coord)] = Blocked;
     }
-    if (r < mapCells.size() - (colNumbers.size() - 1) && r %colNumbers.size() != colNumbers.size()-1  && diaBelowRightOf(r) == Empty) {
-        mapCells[diaBelowRightOf(r)] = Blocked;
+    if (coord < mapCells.size() - (colNumbers.size() - 1) && coord % colNumbers.size() != colNumbers.size() - 1 &&
+            mapCells[diaBelowRightOf(coord)] == Empty) {
+        mapCells[diaBelowRightOf(coord)] = Blocked;
     }
-    if (r < mapCells.size() - (colNumbers.size() - 1) && r %colNumbers.size() != 0 && diaBelowLeftOf(r) == Empty) {
-        mapCells[diaBelowLeftOf(r)] = Blocked;
+    if (coord < mapCells.size() - (colNumbers.size() - 1) && coord % colNumbers.size() != 0 &&
+            mapCells[diaBelowLeftOf(coord)] == Empty) {
+        mapCells[diaBelowLeftOf(coord)] = Blocked;
     }
-    if (r >= colNumbers.size() - 1 && r %colNumbers.size() != colNumbers.size()-1 && diaUpperRightOf(r) == Empty) {
-        mapCells[diaUpperRightOf(r)] = Blocked;
+    if (coord >= colNumbers.size() - 1 && coord % colNumbers.size() != colNumbers.size() - 1 &&
+            mapCells[diaUpperRightOf(coord)] == Empty) {
+        mapCells[diaUpperRightOf(coord)] = Blocked;
     }
-    if (r >= colNumbers.size() - 1 && r %colNumbers.size() != 0 && diaUpperLeftOf(r) == Empty) {
-        mapCells[diaUpperLeftOf(r)] = Blocked;
+    if (coord >= colNumbers.size() - 1 && coord % colNumbers.size() != 0 && mapCells[diaUpperLeftOf(coord)] == Empty) {
+        mapCells[diaUpperLeftOf(coord)] = Blocked;
     }
 }
 
@@ -384,214 +390,242 @@ size_t Field1D::split(const std::string &txt, std::vector<std::string> &strs, ch
     return strs.size();
 }
 
-vector<tuple<int, int>> Field1D::getNeighbors(int r, int c) {
-    if (c == 0 && r == 0) {
-        tuple<int, int> right(r, c + 1);
-        tuple<int, int> below(r + 1, c);
-        vector<tuple<int, int>> result;
-        result.push_back(right);
-        result.push_back(below);
-        return result;
-    } else if (c + 1 == colNumbers.size() && r + 1 == rowNumbers.size()) {
-        tuple<int, int> above(r - 1, c);
-        tuple<int, int> left(r, c - 1);
-        vector<tuple<int, int>> result;
-        result.push_back(above);
-        result.push_back(left);
-        return result;
-    } else if (c == 0 && r + 1 == rowNumbers.size()) {
-        tuple<int, int> right(r, c + 1);
-        tuple<int, int> above(r - 1, c);
-        vector<tuple<int, int>> result;
-        result.push_back(right);
-        result.push_back(above);
-        return result;
-    } else if (c + 1 == colNumbers.size() && r == 0) {
-        tuple<int, int> below(r + 1, c);
-        tuple<int, int> left(r, c - 1);
-        vector<tuple<int, int>> result;
-        result.push_back(below);
-        result.push_back(left);
-        return result;
-    } else if (c == 0 && r + 1 < rowNumbers.size()) {
-        tuple<int, int> right(r, c + 1);
-        tuple<int, int> below(r + 1, c);
-        tuple<int, int> above(r - 1, c);
-        vector<tuple<int, int>> result;
-        result.push_back(right);
-        result.push_back(below);
-        result.push_back(above);
-        return result;
-    } else if (c + 1 < colNumbers.size() && r == 0) {
-        tuple<int, int> right(r, c + 1);
-        tuple<int, int> below(r + 1, c);
-        tuple<int, int> left(r, c - 1);
-        vector<tuple<int, int>> result;
-        result.push_back(right);
-        result.push_back(below);
-        result.push_back(left);
-        return result;
-    } else if (c + 1 < colNumbers.size() && r + 1 == rowNumbers.size()) {
-        tuple<int, int> right(r, c + 1);
-        tuple<int, int> above(r - 1, c);
-        tuple<int, int> left(r, c - 1);
-        vector<tuple<int, int>> result;
-        result.push_back(right);
-        result.push_back(above);
-        result.push_back(left);
-        return result;
-    } else if (c + 1 == colNumbers.size() && r + 1 < rowNumbers.size()) {
-        tuple<int, int> below(r + 1, c);
-        tuple<int, int> above(r - 1, c);
-        tuple<int, int> left(r, c - 1);
-        vector<tuple<int, int>> result;
-        result.push_back(below);
-        result.push_back(above);
-        result.push_back(left);
-        return result;
-    } else {
-        tuple<int, int> right(r, c + 1);
-        tuple<int, int> below(r + 1, c);
-        tuple<int, int> above(r - 1, c);
-        tuple<int, int> left(r, c - 1);
-        vector<tuple<int, int>> result;
-        result.push_back(right);
-        result.push_back(below);
-        result.push_back(above);
-        result.push_back(left);
-        return result;
+vector<int> Field1D::getNeighbors(int coord) {
+    int coordRight = coord + 1;
+    int coordLeft = coord - 1;
+    int coordAbove = coord - colNumbers.size();
+    int coordBelow = coord + colNumbers.size();
+
+    vector<int> neighbours;
+    if (coord % (colNumbers.size() - 1) != colNumbers.size()) {
+        neighbours.push_back(coordRight);
     }
+    if (coord % colNumbers.size() != 0) {
+        neighbours.push_back(coordLeft);
+    }
+    if (coord > colNumbers.size()) {
+        neighbours.push_back(coordAbove);
+    }
+    if (coord <= mapCells.size() - colNumbers.size()) {
+        neighbours.push_back(coordBelow);
+    }
+    return neighbours;
 }
 
-ValidField Field1D::findOpenField() {
-    for (int r = 0; r < map.size(); r++) {
-        for (int c = 0; c < map[r].size(); c++) {
-            if (map[r][c] == Empty) return ValidField{true, tuple<int, int>(r, c)};
+ValidField1D Field1D::findOpenField() {
+    printField();
+    for (int f = 0; f < mapCells.size(); f++) {
+        if (mapCells[f] == Empty) {
+            return ValidField1D{true, f};
         }
     }
-    return ValidField{false, tuple<int, int>(-1, -1)};
+
+    return ValidField1D{false, -1};
+
 }
 
 bool Field1D::isDone() {
-    for (int r = 0; r < map.size(); r++) {
-        int tent = 0;
-        for (int c = 0; c < map[r].size(); c++) {
-            if (map[r][c] == Tent) tent++;
+    for (int r = 0; r < rowNumbers.size(); r++) {
+        int tents = 0;
+        for (int c = r * colNumbers.size(); c < (r + 1) * colNumbers.size(); c++) {
+            if (mapCells[c] == Tent) tents++;
         }
-        if (tent != rowNumbers[r]) return false;
+        if (tents != rowNumbers[r]) {
+            return false;
+        }
     }
-    for (int c = 0; c < map.size(); c++) {
-        int tent = 0;
-        for (int r = 0; r < map[0].size(); r++) {
-            if (map[r][c] == Tent) tent++;
-        }
-        if (tent != colNumbers[c]) return false;
 
+    for (int c = 0; c < colNumbers.size(); c++) {
+        int tents = 0;
+        for (int r = c; r <= mapCells.size() - (colNumbers.size() - c); r += colNumbers.size()) {
+            if (mapCells[r] == Tent) tents++;
+        }
+        if (tents != colNumbers[c]) {
+            return false;
+        }
     }
+
     return true;
+
+
+
+//    // Check rows
+//    for (int r = 0; r < map.size(); r++) {
+//        int tent = 0;
+//        for (int c = 0; c < map[r].size(); c++) {
+//            if (map[r][c] == Tent) tent++;
+//        }
+//        if (tent != rowNumbers[r]) return false;
+//    }
+//
+//    // Check cols
+//    for (int c = 0; c < map.size(); c++) {
+//        int tent = 0;
+//        for (int r = 0; r < map[0].size(); r++) {
+//            if (map[r][c] == Tent) tent++;
+//        }
+//        if (tent != colNumbers[c]) return false;
+//
+//    }
+//    return true;
 }
 
-bool Field1D::assertNoNeighbouringTents(int r, int c) {
-    vector neighbors = getNeighbors(r, c);
+bool Field1D::assertNoNeighbouringTents(int coord) {
+    vector neighbors = getNeighbors(coord);
     for (auto &n : neighbors) {
-        if (map[std::get<0>(n)][std::get<1>(n)] == Tent) return false;
+        if (mapCells[n] == Tent) return false;
     }
     return true;
 }
 
-bool Field1D::assertValidMove(int r, int c) {
-    return assertNoNeighbouringTents(r, c) && assertValidSum(r, c)&& assertValidParity(r, c);
+bool Field1D::assertValidMove(int coord) {
+    return assertNoNeighbouringTents(coord) && assertValidSum(coord) && assertValidParity(coord);
 }
 
-bool Field1D::assertValidSum(int r, int c) {
+bool Field1D::assertValidSum(int coord) {
+    // Calculate row and col number for this particular cell's row/col
+    int rowOfCell = coord / colNumbers.size();
+    int colOfCell = coord % colNumbers.size();
+    int rowNumber = rowNumbers[rowOfCell];
+    int colNumber = colNumbers[colOfCell];
+
+    // iterate row
     int rowSum = 0;
-    for (int col = 0; col < colNumbers.size(); col++) {
-        if (map[r][col] == Tent) rowSum++;
+    for (int i = rowOfCell * colNumbers.size(); i < (rowOfCell + 1) * colNumbers.size(); i++) { // TODO check
+        if (mapCells[i] == Tent) rowSum++;
     }
-    if (rowSum > rowNumbers[r]) return false;
+    if (rowSum > rowNumbers[rowOfCell]) {
+        return false;
+    }
 
+    // iterate col
     int colSum = 0;
-    for (int row = 0; row < rowNumbers.size(); row++) {
-        if (map[row][c] == Tent) colSum++;
+    for (int i = colOfCell; i <= colOfCell + colNumbers.size() * (rowNumbers.size() - 1); i += colNumbers.size()) {
+        if (mapCells[i] == Tent) colSum++;
     }
-    if (colSum > colNumbers[c]) return false;
+    if (colSum > colNumbers[colOfCell]) return false;
 
     return true;
 }
 
-int Field1D::countTreesRec(int r, int c, vector<tuple<int, int>>* pred) {
-    pred->push_back(tuple<int, int>(r, c));
-    if (map[r][c] == Tree) {
+void Field1D::solveColRowForField(int coord) {
+
+    int rowOfCell = coord / colNumbers.size();
+    int colOfCell = coord % colNumbers.size();
+
+
+    // Iterate over rows
+    int tentsR = 0;
+    int freeR = 0;
+    for (int i = rowOfCell * colNumbers.size(); i < (rowOfCell + 1) * colNumbers.size(); i++) {
+        if (mapCells[i] == Tent) tentsR++;
+        if (mapCells[i] == Empty) freeR++;
+    }
+
+    if (freeR == rowNumbers[rowOfCell] - tentsR) {
+        for (int i = rowOfCell * colNumbers.size(); i < (rowOfCell + 1) * colNumbers.size(); i++) {
+            if (mapCells[i] == Empty) mapCells[i] = Tent;
+        }
+    }
+    if (tentsR == rowNumbers[rowOfCell]) {
+        for (int i = rowOfCell * colNumbers.size(); i < (rowOfCell + 1) * colNumbers.size(); i++) {
+            if (mapCells[i] == Empty) mapCells[i] = Blocked;
+        }
+    }
+
+    // Iterate over cols
+    int tentsC = 0;
+    int freeC = 0;
+    for (int i = colOfCell; i <= mapCells.size() - (colNumbers.size() - colOfCell); i += colNumbers.size()) {
+        if (mapCells[i] == Tent) tentsC++;
+        if (mapCells[i] == Empty) freeC++;
+    }
+    if (tentsC + freeC == colNumbers[colOfCell]) {
+        for (int i = colOfCell; i <= mapCells.size() - (colNumbers.size() - colOfCell); i += colNumbers.size()) {
+            if (mapCells[i] == Empty) mapCells[i] = Tent;
+        }
+    }
+    if (tentsC == colNumbers[colOfCell]) {
+        for (int i = colOfCell; i <= mapCells.size() - (colNumbers.size() - colOfCell); i += colNumbers.size()) {
+            if (mapCells[i] == Empty) mapCells[i] = Blocked;
+        }
+    }
+
+}
+
+int Field1D::countTreesRec(int coord, vector<int> *pred) {
+    pred->push_back(coord);
+    if (mapCells[coord] == Tree) {
         int parity = 1;
-        for (auto &n : getNeighbors(r, c)) {
-            if (!containsTuple(pred, n)) parity += countTentsRec(std::get<0>(n), std::get<1>(n), pred);
+        for (auto &n : getNeighbors(coord)) {
+            if (!containsNumber(pred, n)) parity += countTentsRec(n, pred);
         }
         return parity;
     }
     return 0;
 }
 
-int Field1D::countTentsRec(int r, int c, vector<tuple<int, int>> *pred) {
-    pred->push_back(tuple<int, int>(r, c));
-    if (map[r][c] == Tent) {
+int Field1D::countTentsRec(int coord, vector<int> *pred) {
+    pred->push_back(coord);
+    if (mapCells[coord] == Tent) {
         int parity = -1;
-        for (auto &n : getNeighbors(r, c)) {
-            if (!containsTuple(pred, n)) parity += countTreesRec(std::get<0>(n), std::get<1>(n), pred);
+        for (auto &n : getNeighbors(coord)) {
+            if (!containsNumber(pred, n)) parity += countTreesRec(n, pred);
         }
         return parity;
     }
     return 0;
 }
 
-bool Field1D::assertValidParity(int r, int c) {
+bool Field1D::assertValidParity(int coord) {
     int parity = -1;
-    vector<tuple<int, int>> pred;
-    pred.emplace_back(r, c);
-    for (auto &n : getNeighbors(r, c)) {
-        parity += countTreesRec(std::get<0>(n), std::get<1>(n), &pred);
+    vector<int> pred;
+    pred.emplace_back(coord);
+    for (auto &n : getNeighbors(coord)) {
+        parity += countTreesRec(n, &pred);
     }
     if (parity >= 0) return true;
     return false;
 }
 
 
-bool Field1D::containsTuple(vector<tuple<int, int>>* vec, tuple<int, int> tup) {
-    for (auto &t : *vec) {
-        if (std::get<0>(t) == std::get<0>(tup) && std::get<1>(t) == std::get<1>(tup)) return true;
+bool Field1D::containsNumber(vector<int> *vec, int coord) {
+    for (auto &n : *vec) {
+        if (coord == n) return true;
     }
     return false;
 }
 
-CellContent Field1D::aboveOf(int current){
-    return mapCells[current - colNumbers.size()];
+int Field1D::aboveOf(int current) {
+    return current - colNumbers.size();
 }
 
-CellContent Field1D::belowOf(int current){
-    return mapCells[current + colNumbers.size()];
+int Field1D::belowOf(int current) {
+    return current + colNumbers.size();
 }
 
-CellContent Field1D::rightOf(int current){
-    return mapCells[current + 1];
+int Field1D::rightOf(int current) {
+    return current + 1;
 }
 
-CellContent Field1D::leftOf(int current){
-    return mapCells[current - 1];
+int Field1D::leftOf(int current) {
+    return current - 1;
 }
 
-CellContent Field1D::diaUpperRightOf(int current){
-    return mapCells[current - colNumbers.size() + 1];
+int Field1D::diaUpperRightOf(int current) {
+    return current - colNumbers.size() + 1;
 }
 
-CellContent Field1D::diaUpperLeftOf(int current){
-    return mapCells[current - colNumbers.size() - 1];
+int Field1D::diaUpperLeftOf(int current) {
+    return current - colNumbers.size() - 1;
 }
 
-CellContent Field1D::diaBelowRightOf(int current){
-    return mapCells[current + colNumbers.size() + 1];
+int Field1D::diaBelowRightOf(int current) {
+    return current + colNumbers.size() + 1;
 }
 
-CellContent Field1D::diaBelowLeftOf(int current){
-    return mapCells[current + colNumbers.size() - 1];
+int Field1D::diaBelowLeftOf(int current) {
+    return current + colNumbers.size() - 1;
 }
 
 

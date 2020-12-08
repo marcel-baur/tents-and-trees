@@ -2,8 +2,8 @@
 // Created by Marcel Baur on 15/11/2020.
 //
 
-#ifndef SAT_FIELD_H
-#define SAT_FIELD_H
+#ifndef SAT_FIELD1D_H
+#define SAT_FIELD1D_H
 
 #include <string>
 #include <vector>
@@ -12,10 +12,9 @@
 
 using namespace std;
 
-struct ValidField {
+struct ValidField1D {
     bool result;
-    tuple<int, int> coord;
-    int coordVec;
+    int coord;
 };
 
 class Field1D {
@@ -33,41 +32,43 @@ private:
 
     //One Dimesional Vector
     vector<CellContent> mapCells;
-    vector<int> coordNumbers;
     void flattenVector(vector<vector<CellContent>> map);
-    CellContent aboveOf(int current);
-    CellContent belowOf(int current);
-    CellContent rightOf(int current);
-    CellContent leftOf(int current);
-    CellContent diaUpperRightOf(int current);
-    CellContent diaUpperLeftOf(int current);
-    CellContent diaBelowRightOf(int current);
-    CellContent diaBelowLeftOf(int current);
+    int aboveOf(int current);
+    int belowOf(int current);
+    int rightOf(int current);
+    int leftOf(int current);
+    int diaUpperRightOf(int current);
+    int diaUpperLeftOf(int current);
+    int diaBelowRightOf(int current);
+    int diaBelowLeftOf(int current);
 
     void setClearRows();
     void setClearCols();
     void blockFieldsWithoutTree();
     void blockRadiusOfAllTents();
-    void blockRadiusTent(int r);
-    bool solveRec(int r, int c);
+    void blockRadiusTent(int coord);
+    bool solveRec(int coord);
     bool isDone();
     void analyzeRowsAndCols();
-    bool assertValidMove(int r, int c);
-    bool assertValidSum(int r, int c);
-    void solveColRowForField(int r, int c);
-    bool assertValidParity(int r, int c);
-    int countTreesRec(int r, int c, vector<tuple<int, int>>* pred);
-    int countTentsRec(int r, int c, vector<tuple<int, int>>* pred);
-    bool assertNoNeighbouringTents(int r, int c);
+    bool assertValidMove(int coord);
+    bool assertValidSum(int coord);
+    void solveColRowForField(int coord);
+    bool assertValidParity(int coord);
+    int countTreesRec(int coord, vector<int>* pred);
+    int countTentsRec(int coord, vector<int>* pred);
+    bool assertNoNeighbouringTents(int coord);
     vector<CellContent> saveMap();
-    vector<tuple<int,int>> getNeighbors(int r, int c);
-    ValidField findOpenField();
+    vector<int> getNeighbors(int coord);
+    ValidField1D findOpenField();
     static size_t split(const std::string &txt, std::vector<std::string> &strs, char ch);
 
     vector<CellContent> restoreMap(vector<CellContent> deepCopy);
 
-    static bool containsTuple(vector<tuple<int, int>>* vec, tuple<int, int> tup);
+    void printMapCells(vector<CellContent> cells);
 
+    static bool containsNumber(vector<int>* vec, int coord);
+
+    void print1DVector();
 };
 
 #endif //SAT_FIELD_H
